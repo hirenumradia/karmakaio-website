@@ -1,5 +1,174 @@
+@font-face {
+  font-family: 'Nexa';
+  src: url('./fonts/NexaBold.woff2') format('woff2'),
+      url('./fonts/NexaBold.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('./fonts/NexaLight.woff2') format('woff2'),
+      url('./fonts/NexaLight.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('./fonts/Nexa-LightItalic.woff2') format('woff2'),
+      url('./fonts/Nexa-LightItalic.woff') format('woff');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('./fonts/Nexa-Heavy.woff2') format('woff2'),
+      url('./fonts/Nexa-Heavy.woff') format('woff');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('./fonts/Nexa-Light.woff2') format('woff2'),
+      url('./fonts/Nexa-Light.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('./fonts/Nexa-Bold.woff2') format('woff2'),
+      url('./fonts/Nexa-Bold.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('./fonts/Nexa-Thin.woff2') format('woff2'),
+      url('./fonts/Nexa-Thin.woff') format('woff');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('./fonts/Nexa-RegularItalic.woff2') format('woff2'),
+      url('./fonts/Nexa-RegularItalic.woff') format('woff');
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('./fonts/Nexa-HeavyItalic.woff2') format('woff2'),
+      url('./fonts/Nexa-HeavyItalic.woff') format('woff');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('./fonts/Nexa-Black.woff2') format('woff2'),
+      url('./fonts/Nexa-Black.woff') format('woff');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('./fonts/Nexa-ThinItalic.woff2') format('woff2'),
+      url('./fonts/Nexa-ThinItalic.woff') format('woff');
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('./fonts/Nexa-BookItalic.woff2') format('woff2'),
+      url('./fonts/Nexa-BookItalic.woff') format('woff');
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('./fonts/Nexa-BlackItalic.woff2') format('woff2'),
+      url('./fonts/Nexa-BlackItalic.woff') format('woff');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('./fonts/Nexa-BoldItalic.woff2') format('woff2'),
+      url('./fonts/Nexa-BoldItalic.woff') format('woff');
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('./fonts/Nexa-Regular.woff2') format('woff2'),
+      url('./fonts/Nexa-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('./fonts/Nexa-Book.woff2') format('woff2'),
+      url('./fonts/Nexa-Book.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('./fonts/Nexa-XBoldItalic.woff2') format('woff2'),
+      url('./fonts/Nexa-XBoldItalic.woff') format('woff');
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('./fonts/Nexa-XBold.woff2') format('woff2'),
+      url('./fonts/Nexa-XBold.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+body {
+  font-family: Nexa, sans-serif;
+  font-weight: 300;
+  font-style: normal;
+}
+
 .App {
   text-align: center;
+  min-height: 100vh;
 }
 
 .App-logo {
@@ -35,4 +204,10 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.galaxyCanvas {
+  background-color: #000000;
+  min-height: 100vh;
+  display: flex;
 }

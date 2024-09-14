@@ -1,0 +1,365 @@
+import * as React from "react";
+import { useRef } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
+import { useTexture } from "@react-three/drei";
+import * as THREE from "three";
+import {
+  BufferGeometry,
+  Color,
+  Points,
+  RawShaderMaterial,
+  AdditiveBlending,
+  CanvasTexture,
+} from "three";
+
+interface PointsWithUniforms extends THREE.Points {
+  material: MaterialWithUniforms;
+}
+
+type MaterialWithUniforms = THREE.RawShaderMaterial & {
+  uniforms: { [uniform: string]: THREE.IUniform };
+};
+
+const useStarAlphaTexture = (): CanvasTexture | null => {
+  const [texture, setTexture] = React.useState<CanvasTexture | null>(null);
+
+  React.useEffect(() => {
+    const ctx = document.createElement("canvas").getContext("2d");
+    if (!ctx) {
+      return;
+    }
+
+    ctx.canvas.width = ctx.canvas.height = 32;
+
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, 32, 32);
+
+    let grd = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+    grd.addColorStop(0.0, "#fff");
+    grd.addColorStop(1.0, "#000");
+    ctx.fillStyle = grd;
+    ctx.beginPath();
+    ctx.rect(15, 0, 2, 32);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.rect(0, 15, 32, 2);
+    ctx.fill();
+
+    grd = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+    grd.addColorStop(0.1, "#ffff");
+    grd.addColorStop(0.6, "#0000");
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, 32, 32);
+
+    const alphaMap = new THREE.CanvasTexture(ctx.canvas);
+    alphaMap.needsUpdate = true;
+    setTexture(alphaMap);
+  });
+
+  return texture;
+};
+
+const shaderUtils = `
+float random (vec2 st) {
+  return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+}
+
+vec3 scatter (vec3 seed) {
+  float u = random(seed.xy);
+  float v = random(seed.yz);
+  float theta = u * 6.28318530718;
+  float phi = acos(2.0 * v - 1.0);
+
+  float sinTheta = sin(theta);
+  float cosTheta = cos(theta);
+  float sinPhi = sin(phi);
+  float cosPhi = cos(phi);
+
+  float x = sinPhi * cosTheta;
+  float y = sinPhi * sinTheta;
+  float z = cosPhi;
+
+  return vec3(x, y, z);
+}
+`;
+
+interface GalaxyThreeProps {
+  alphaTexture: CanvasTexture;
+  ref?: React.Ref<MaterialWithUniforms | null>;
+}
+
+// const GalaxyThree: React.FC = () => {
+interface GalaxyThreeProps {
+  alphaTexture: CanvasTexture;
+  ref?: React.Ref<MaterialWithUniforms | null>;
+}
+
+const GalaxyThree = React.forwardRef<
+  PointsWithUniforms | null,
+  GalaxyThreeProps
+>(({ alphaTexture }, ref) => {
+  const count = 128 ** 2;
+
+  // Galaxy Geometry
+  const galaxyGeometry = new BufferGeometry();
+
+  const galaxyPosition = new Float32Array(count * 3);
+  const galaxySeed = new Float32Array(count * 3);
+  const galaxySize = new Float32Array(count);
+
+  for (let i = 0; i < count; i++) {
+    galaxyPosition[i * 3] = i / count;
+    galaxySeed[i * 3 + 0] = Math.random();
+    galaxySeed[i * 3 + 1] = Math.random();
+    galaxySeed[i * 3 + 2] = Math.random();
+    galaxySize[i] = Math.random() * 2 + 0.5;
+  }
+
+  galaxyGeometry.setAttribute(
+    "position",
+    new THREE.BufferAttribute(galaxyPosition, 3)
+  );
+  galaxyGeometry.setAttribute("size", new THREE.BufferAttribute(galaxySize, 1));
+  galaxyGeometry.setAttribute("seed", new THREE.BufferAttribute(galaxySeed, 3));
+
+  const innColor = new Color("#f40");
+  const outColor = new Color("#a7f");
+
+  // Galaxy Material
+  const galaxyMaterial = new RawShaderMaterial({
+    uniforms: {
+      uTime: { value: 0 },
+      uSize: { value: 1 },
+      uBranches: { value: 2 },
+      uRadius: { value: 0 },
+      uSpin: { value: Math.PI * 0.25 },
+      uRandomness: { value: 0 },
+      uAlphaMap: { value: alphaTexture }, // Use the passed texture here
+      uColorInn: { value: innColor },
+      uColorOut: { value: outColor },
+    },
+    vertexShader: `...`,
+    fragmentShader: `...`,
+    side: THREE.BackSide,
+    transparent: true,
+    depthTest: false,
+    depthWrite: false,
+    blending: AdditiveBlending,
+  });
+
+  // Galaxy Points
+  const galaxyPoints = new Points(galaxyGeometry, galaxyMaterial);
+  galaxyPoints.scale.setScalar(500);
+
+  // Galaxy Animation
+  useFrame((state) => {
+    galaxyMaterial.uniforms.uTime.value = state.clock.getElapsedTime();
+  });
+
+  // Assign galaxyPoints to the ref
+  React.useImperativeHandle(ref, () => galaxyPoints);
+
+  return <primitive object={galaxyPoints} />;
+});
+
+/// GALAXY COMPONENT ///
+
+function createUniverse(
+  scene: THREE.Scene,
+  galaxyMaterial: MaterialWithUniforms
+): THREE.Points {
+  const count = 20000;
+
+  const universeGeometry = new THREE.BufferGeometry();
+
+  const universePosition = new Float32Array((count * 3) / 2);
+  const universeSeed = new Float32Array((count * 3) / 2);
+  const universeSize = new Float32Array(count / 2);
+
+  for (let i = 0; i < count / 2; i++) {
+    universeSeed[i * 3 + 0] = Math.random();
+    universeSeed[i * 3 + 1] = Math.random();
+    universeSeed[i * 3 + 2] = Math.random();
+    universeSize[i] = Math.random() * 2 + 0.5;
+  }
+
+  universeGeometry.setAttribute(
+    "position",
+    new THREE.BufferAttribute(universePosition, 3)
+  );
+  universeGeometry.setAttribute(
+    "seed",
+    new THREE.BufferAttribute(universeSeed, 3)
+  );
+  universeGeometry.setAttribute(
+    "size",
+    new THREE.BufferAttribute(universeSize, 1)
+  );
+
+  const universeMaterial = new THREE.RawShaderMaterial({
+    uniforms: {
+      uTime: { value: 0 },
+      uSize: galaxyMaterial.uniforms.uSize,
+      uRadius: galaxyMaterial.uniforms.uRadius,
+      uAlphaMap: galaxyMaterial.uniforms.uAlphaMap,
+    },
+    vertexShader: `
+precision highp float;
+
+attribute vec3 seed;
+attribute float size;
+uniform mat4 projectionMatrix;
+uniform mat4 modelViewMatrix;
+
+uniform float uTime;
+uniform float uSize;
+uniform float uRadius;
+
+#define PI  3.14159265359
+#define PI2 6.28318530718
+
+${shaderUtils}
+
+void main() {
+
+  vec3 p = scatter(seed) * r * s;
+
+  float q = random(seed.zx);
+  for (int i = 0; i < 3; i++) q *= q;
+  p *= q;
+
+  float l = length(p) / (s.x * r);
+  p = l < 0.001 ? (p / l) : p;
+
+  vec3 temp = p;
+  float ql = 1.0 - l;
+  for (int i = 0; i < 3; i++) ql *= ql;
+  float ac = cos(-uTime * ql);
+  float as = sin(-uTime * ql);
+  p.x = temp.x * ac - temp.z * as;
+  p.z = temp.x * as + temp.z * ac;
+
+  vec4 mvp = modelViewMatrix * vec4(p * uRadius, 1.0);
+  gl_Position = projectionMatrix * mvp;
+
+  l = (2.0 - l) * (2.0 - l);
+
+  gl_PointSize = (r * size * uSize * l) / -mvp.z;
+}
+`,
+    fragmentShader: `
+precision highp float;
+
+uniform sampler2D uAlphaMap;
+
+#define PI 3.14159265359
+
+void main() {
+  vec2 uv = vec2(gl_PointCoord.x, 1.0 - gl_PointCoord.y);
+  float a = texture2D(uAlphaMap, uv).g;
+  if (a < 0.1) discard;
+
+  gl_FragColor = vec4(vec3(1.0), a);
+}
+`,
+    transparent: true,
+    depthTest: false,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+
+  const universe = new THREE.Points(universeGeometry, universeMaterial);
+  scene.add(universe);
+
+  return universe;
+}
+
+interface UniverseThreeProps {
+  alphaTexture: THREE.Texture;
+  galaxyMaterial: MaterialWithUniforms; // Import the MaterialWithUniforms type from the createUniverse file
+}
+
+const UniverseThree: React.FC<UniverseThreeProps> = ({
+  alphaTexture,
+  galaxyMaterial,
+}) => {
+  const { scene } = useThree();
+
+  React.useEffect(() => {
+    const universe = createUniverse(scene, galaxyMaterial);
+    return () => {
+      scene.remove(universe);
+      universe.geometry.dispose();
+
+      if (Array.isArray(universe.material)) {
+        universe.material.forEach((material) => material.dispose());
+      } else {
+        universe.material.dispose();
+      }
+    };
+  }, [scene, galaxyMaterial]);
+
+  return null;
+};
+
+interface OrbitControlsWrapperProps {
+  args: [THREE.Camera, HTMLCanvasElement];
+  enableDamping: boolean;
+  dampingFactor: number;
+  rotateSpeed: number;
+  maxDistance: number;
+}
+
+const OrbitControlsWrapper = React.forwardRef<
+  OrbitControls,
+  OrbitControlsWrapperProps
+>((props, ref) => {
+  const controls = new OrbitControls(...props.args);
+  React.useImperativeHandle(ref, () => controls);
+  useFrame(() => controls.update());
+  return null;
+});
+
+const Controls = () => {
+  const { camera, gl } = useThree();
+  const ref = useRef<OrbitControls>(null!);
+  return (
+    <OrbitControlsWrapper
+      ref={ref}
+      args={[camera, gl.domElement]}
+      enableDamping={true}
+      dampingFactor={0.1}
+      rotateSpeed={0.5}
+      maxDistance={2000}
+    />
+  );
+};
+
+export default function GalaxyComponent() {
+  const alphaTexture = useStarAlphaTexture(); // Call the custom hook to generate the alpha texture
+  const galaxyMaterialRef = useRef<MaterialWithUniforms | null>(null);
+
+  // console.log("Alpha texture in GalaxyComponent", alphaTexture);
+
+  if (!alphaTexture) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <Canvas
+      style={{ background: "#000", height: "100%" }}
+      className="galaxyCanvas"
+    >
+      <Controls />
+      {galaxyMaterialRef.current && (
+        <UniverseThree
+          alphaTexture={alphaTexture}
+          galaxyMaterial={galaxyMaterialRef.current}
+        />
+      )}
+      <GalaxyThree alphaTexture={alphaTexture} />
+    </Canvas>
+  );
+}
