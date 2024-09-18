@@ -1,8 +1,8 @@
 // src/components/PointCloud.tsx
+
 import React, { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { BufferGeometry } from "three";
 import { PointMaterial, LineMaterial } from "./Shaders";
 import {
   generateHeartShape,
@@ -19,13 +19,12 @@ interface PointCloudProps {
 export const PointCloud: React.FC<PointCloudProps> = ({
   shape,
   pointCount = 1000,
-  scale = 1, // Default scale
+  scale = 1,
 }) => {
   const positionsRef = useRef<THREE.BufferAttribute>(null);
-  const linePositionsRef = useRef<THREE.BufferAttribute>(null);
+  const lineGeometryRef = useRef<THREE.BufferGeometry>(null);
   const prevShape = useRef<string>(shape);
   const progressRef = useRef(0);
-  const lineGeometryRef = useRef<THREE.BufferGeometry>(null);
 
   const shapes = useMemo(() => {
     return {
@@ -36,21 +35,24 @@ export const PointCloud: React.FC<PointCloudProps> = ({
   }, [pointCount]);
 
   const currentPositions = useMemo(() => shapes[shape], [shapes, shape]);
-  const previousPositions = useMemo(
-    () => shapes[prevShape.current as keyof typeof shapes],
-    [shapes]
+  const previousPositions = useRef<Float32Array>(currentPositions);
+
+  const positionsArray = useMemo(
+    () => new Float32Array(currentPositions.length),
+    [currentPositions.length]
   );
 
   useFrame((state, delta) => {
+    const positions = positionsRef.current?.array as Float32Array;
+
     if (prevShape.current !== shape) {
       progressRef.current += delta;
       const progress = Math.min(progressRef.current / 1.0, 1); // Animation duration is 1 second
-      const positions = positionsRef.current?.array as Float32Array;
 
       for (let i = 0; i < positions.length; i++) {
         positions[i] =
-          previousPositions[i] +
-          (currentPositions[i] - previousPositions[i]) * progress;
+          previousPositions.current[i] +
+          (currentPositions[i] - previousPositions.current[i]) * progress;
       }
 
       positionsRef.current!.needsUpdate = true;
@@ -58,47 +60,69 @@ export const PointCloud: React.FC<PointCloudProps> = ({
       if (progress >= 1) {
         prevShape.current = shape;
         progressRef.current = 0;
+        previousPositions.current = currentPositions;
       }
     } else {
-      const positions = positionsRef.current?.array as Float32Array;
-      for (let i = 0; i < positions.length; i++) {
-        positions[i] = currentPositions[i];
-      }
+      // Copy currentPositions into positions array without modifying currentPositions
+      positions.set(currentPositions);
       positionsRef.current!.needsUpdate = true;
     }
 
     // Update line positions
     if (lineGeometryRef.current) {
-      const linePositions = generateLinePositions(
-        positionsRef.current!.array as Float32Array
-      );
+      const linePositions = generateLinePositions(positions, 3);
       const positionAttribute = new THREE.BufferAttribute(linePositions, 3);
       lineGeometryRef.current.setAttribute("position", positionAttribute);
     }
   });
 
-  const generateLinePositions = (positions: Float32Array): Float32Array => {
-    const threshold = 1.5;
+  const generateLinePositions = (
+    positions: Float32Array,
+    k: number
+  ): Float32Array => {
     const posArray = [];
     const numPoints = positions.length / 3;
+
+    // Convert positions to Vector3 objects
+    const points = [];
     for (let i = 0; i < numPoints; i++) {
-      for (let j = i + 1; j < numPoints; j++) {
-        const dx = positions[i * 3] - positions[j * 3];
-        const dy = positions[i * 3 + 1] - positions[j * 3 + 1];
-        const dz = positions[i * 3 + 2] - positions[j * 3 + 2];
-        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        if (dist < threshold) {
-          posArray.push(
-            positions[i * 3],
-            positions[i * 3 + 1],
-            positions[i * 3 + 2],
-            positions[j * 3],
-            positions[j * 3 + 1],
-            positions[j * 3 + 2]
-          );
+      points.push(
+        new THREE.Vector3(
+          positions[i * 3],
+          positions[i * 3 + 1],
+          positions[i * 3 + 2]
+        )
+      );
+    }
+
+    // For each point, find the K nearest neighbors
+    for (let i = 0; i < numPoints; i++) {
+      const distances = [];
+      for (let j = 0; j < numPoints; j++) {
+        if (i !== j) {
+          const dist = points[i].distanceToSquared(points[j]);
+          distances.push({ index: j, distance: dist });
         }
       }
+
+      // Sort distances and select the K nearest neighbors
+      distances.sort((a, b) => a.distance - b.distance);
+      const neighbors = distances.slice(0, k);
+
+      // Connect lines to the K nearest neighbors
+      for (const neighbor of neighbors) {
+        const j = neighbor.index;
+        posArray.push(
+          positions[i * 3],
+          positions[i * 3 + 1],
+          positions[i * 3 + 2],
+          positions[j * 3],
+          positions[j * 3 + 1],
+          positions[j * 3 + 2]
+        );
+      }
     }
+
     return new Float32Array(posArray);
   };
 
@@ -109,8 +133,8 @@ export const PointCloud: React.FC<PointCloudProps> = ({
           <bufferAttribute
             ref={positionsRef}
             attach="attributes-position"
-            count={currentPositions.length / 3}
-            array={currentPositions}
+            count={positionsArray.length / 3}
+            array={positionsArray}
             itemSize={3}
           />
         </bufferGeometry>
