@@ -24,7 +24,7 @@ const App: React.FC = () => {
     >
       <ambientLight intensity={0.5} />
       <Controls />
-      <PointCloud shape={shape} pointCount={1000} scale={5} />
+      <PointCloud shape={shape} pointCount={500} scale={5} />
     </Canvas>
   );
 };
