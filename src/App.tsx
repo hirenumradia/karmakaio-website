@@ -6,6 +6,8 @@ import { Controls } from "./3d/Controls";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { ParticleSwarm } from "./3d/ParticleSwarm";
 import { Stars } from "@react-three/drei";
+import { useControls } from 'leva';
+import KarmaHeading from "./3d/KarmaHeading";
 
 const shapes = ["heart", "smiley", "saturn"] as const;
 type ShapeType = (typeof shapes)[number];
@@ -20,6 +22,24 @@ const App: React.FC = () => {
     setShape(shapes[nextIndex]);
   };
 
+  const {
+    trailLength,
+    rainbowIntensity,
+    noiseScale,
+    noiseSpeed,
+    spiralSpeed,
+    spiralTightness,
+    chaosAmount
+  } = useControls({
+     trailLength: { value: 16.2, min: 1, max: 20, step: 0.1 },
+     rainbowIntensity: { value: 0.91, min: 0, max: 1, step: 0.01 },
+     noiseScale: { value: 0.88, min: 0.01, max: 1, step: 0.01 },
+     noiseSpeed: { value: 0.2, min: 0, max: 2, step: 0.1 },
+     spiralSpeed: { value: 0.4, min: 0, max: 2, step: 0.1 },
+     spiralTightness: { value: 0.9, min: 0.1, max: 5, step: 0.1 },
+     chaosAmount: { value: 0.60, min: 0, max: 1, step: 0.01 },
+  });
+
   return (
     <Canvas
       camera={{ position: [0, 0, 30], fov: 75 }}
@@ -27,12 +47,13 @@ const App: React.FC = () => {
     >
       <ambientLight intensity={0.5} />
       <directionalLight
-        position={[0, 10, 10]}
-        intensity={0.2}
-        color="#444444"
+        position={[5, 5, 5]}
+        intensity={10}
       />
+      <pointLight position={[-5, -5, -5]} intensity={0.5} />
+      <KarmaHeading />
       <Controls />
-      <Stars
+      {/* <Stars
         radius={100}
         depth={50}
         count={5000}
@@ -40,8 +61,17 @@ const App: React.FC = () => {
         saturation={0}
         fade
         speed={1}
+      /> */}
+
+      <ParticleSwarm   
+        trailLength={trailLength}
+        rainbowIntensity={rainbowIntensity}
+        noiseScale={noiseScale}
+        noiseSpeed={noiseSpeed}
+        spiralSpeed={spiralSpeed}
+        spiralTightness={spiralTightness}
+        chaosAmount={chaosAmount} 
       />
-      <ParticleSwarm />
       <PointCloud shape={shape} pointCount={500} scale={5} />
       <EffectComposer>
         <Bloom
