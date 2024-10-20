@@ -48,12 +48,12 @@ const App: React.FC = () => {
       <ambientLight intensity={0.5} />
       <directionalLight
         position={[5, 5, 5]}
-        intensity={10}
+        intensity={1}
       />
       <pointLight position={[-5, -5, -5]} intensity={0.5} />
-      <KarmaHeading />
+
       <Controls />
-      {/* <Stars
+      <Stars
         radius={100}
         depth={50}
         count={5000}
@@ -61,7 +61,7 @@ const App: React.FC = () => {
         saturation={0}
         fade
         speed={1}
-      /> */}
+      />
 
       <ParticleSwarm   
         trailLength={trailLength}
@@ -73,6 +73,7 @@ const App: React.FC = () => {
         chaosAmount={chaosAmount} 
       />
       <PointCloud shape={shape} pointCount={500} scale={5} />
+      <KarmaHeading />
       <EffectComposer>
         <Bloom
           luminanceThreshold={0.2}
