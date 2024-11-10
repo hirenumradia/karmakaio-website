@@ -14,10 +14,15 @@ const shapes = ["heart", "smiley", "saturn"] as const;
 type ShapeType = (typeof shapes)[number];
 
 const App: React.FC = () => {
-  const [shapeIndex, setShapeIndex] = useState(0);
-  const [shape, setShape] = useState<ShapeType>("heart");
+  // Fix the shape to "saturn" by setting a constant
+  const fixedShape: ShapeType = "saturn";
+  const [shapeIndex, setShapeIndex] = useState(2);
+  const [shape, setShape] = useState<ShapeType>(fixedShape);
 
   const handleCanvasClick = () => {
+    if(fixedShape){
+      return;
+    }
     const nextIndex = (shapeIndex + 1) % shapes.length;
     setShapeIndex(nextIndex);
     setShape(shapes[nextIndex]);
@@ -43,7 +48,7 @@ const App: React.FC = () => {
 
   return (
     <Canvas
-      camera={{ position: [0, 2, 5], fov: 75 }}
+      camera={{ position: [0, 1, 35], fov: 50 }}
       onClick={handleCanvasClick}
       shadows
       gl={{
