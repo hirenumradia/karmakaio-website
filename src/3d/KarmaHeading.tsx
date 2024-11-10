@@ -1,14 +1,16 @@
+// KarmaHeading.tsx
 import { useEffect, useRef } from 'react';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
-import { useThree, useFrame } from '@react-three/fiber';
+import { useThree, useFrame, useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
+import { CubeCamera, PMREMGenerator } from 'three';
 
 const KarmaHeading: React.FC = () => {
   const { scene, gl } = useThree();
   const textMeshRef = useRef<THREE.Mesh | null>(null);
-  const cubeCameraRef = useRef<THREE.CubeCamera | null>(null);
-  const cubeRenderTargetRef = useRef<THREE.WebGLCubeRenderTarget | null>(null);
+  const materialRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const cubeCameraRef = useRef<THREE.CubeCamera>();
 
   useEffect(() => {
     const loader = new FontLoader();
@@ -36,21 +38,23 @@ const KarmaHeading: React.FC = () => {
         -textDepth / 2
       );
 
-      cubeRenderTargetRef.current = new THREE.WebGLCubeRenderTarget(256);
-      cubeCameraRef.current = new THREE.CubeCamera(0.1, 1000, cubeRenderTargetRef.current);
-      scene.add(cubeCameraRef.current);
+      const renderTarget = new THREE.WebGLCubeRenderTarget(256);
+      const cubeCamera = new CubeCamera(0.1, 1000, renderTarget);
+      scene.add(cubeCamera);
+      cubeCameraRef.current = cubeCamera;
 
       const textMaterial = new THREE.MeshStandardMaterial({
-        color: 0xFFFFFF, // Matrix green
-        emissive: 0x000000, // Darker green for the glow effect
-        metalness: 0.5,
-        roughness: 0,
-        envMap: cubeRenderTargetRef.current.texture,
+        color: 0xCCCCCC,
+        metalness: 1,
+        roughness: 0.1,
+        envMap: renderTarget.texture,
+        envMapIntensity: 1,
       });
 
+      materialRef.current = textMaterial;
+      
       const textMesh = new THREE.Mesh(textGeometry, textMaterial);
       textMesh.position.set(0, 0, 5);
-      
       textMeshRef.current = textMesh;
       scene.add(textMesh);
     });
@@ -63,18 +67,21 @@ const KarmaHeading: React.FC = () => {
         scene.remove(cubeCameraRef.current);
       }
     };
-  }, [scene]);
+  }, [scene, gl]);
 
   useFrame(() => {
-    if (textMeshRef.current && cubeCameraRef.current && cubeRenderTargetRef.current) {
+    if (textMeshRef.current && materialRef.current && cubeCameraRef.current) {
       textMeshRef.current.visible = false;
-      cubeCameraRef.current.position.copy(textMeshRef.current.position);
       cubeCameraRef.current.update(gl, scene);
       textMeshRef.current.visible = true;
+
+      textMeshRef.current.rotation.y = Math.sin(Date.now() * 0.0002) * 0.1;
+      
+      materialRef.current.envMapIntensity = 0.8 + Math.sin(Date.now() * 0.001) * 0.2;
     }
   });
 
   return null;
-};
+}
 
 export default KarmaHeading;

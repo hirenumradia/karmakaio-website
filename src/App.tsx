@@ -8,6 +8,7 @@ import { ParticleSwarm } from "./3d/ParticleSwarm";
 import { Stars } from "@react-three/drei";
 import { useControls } from 'leva';
 import KarmaHeading from "./3d/KarmaHeading";
+import * as THREE from 'three';
 
 const shapes = ["heart", "smiley", "saturn"] as const;
 type ShapeType = (typeof shapes)[number];
@@ -42,15 +43,42 @@ const App: React.FC = () => {
 
   return (
     <Canvas
-      camera={{ position: [0, 0, 30], fov: 75 }}
+      camera={{ position: [0, 2, 5], fov: 75 }}
       onClick={handleCanvasClick}
+      shadows
+      gl={{
+        antialias: true,
+        toneMapping: THREE.ACESFilmicToneMapping,
+        toneMappingExposure: 1,
+        outputColorSpace: 'srgb',
+      }}
     >
-      <ambientLight intensity={0.5} />
-      <directionalLight
-        position={[5, 5, 5]}
-        intensity={1}
+      {/* Lighting Setup */}
+      <hemisphereLight 
+        color={0xffffff} 
+        groundColor={0x444444} 
+        intensity={0.6} 
       />
-      <pointLight position={[-5, -5, -5]} intensity={0.5} />
+      <ambientLight intensity={0.3} />
+      <directionalLight
+        position={[5, 10, 7.5]}
+        intensity={1.5}
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+        shadow-camera-near={0.5}
+        shadow-camera-far={500}
+      />
+      <pointLight 
+        position={[-10, -10, -10]} 
+        intensity={0.5} 
+        color={0xffaa00} 
+      />
+      <pointLight 
+        position={[10, 10, 10]} 
+        intensity={0.5} 
+        color={0x00aaff} 
+      />
 
       <Controls />
       <Stars
@@ -62,7 +90,6 @@ const App: React.FC = () => {
         fade
         speed={1}
       />
-
       <ParticleSwarm   
         trailLength={trailLength}
         rainbowIntensity={rainbowIntensity}
@@ -76,14 +103,14 @@ const App: React.FC = () => {
       <KarmaHeading />
       <EffectComposer>
         <Bloom
-          luminanceThreshold={0.15}
+          luminanceThreshold={0.4}
           luminanceSmoothing={0.3}
-          intensity={0.5}
+          intensity={1.0}
           height={300}
         />
       </EffectComposer>
     </Canvas>
   );
-};
+}
 
 export default App;
