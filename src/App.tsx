@@ -76,9 +76,9 @@ const App: React.FC = () => {
       <KarmaHeading />
       <EffectComposer>
         <Bloom
-          luminanceThreshold={0.2}
-          luminanceSmoothing={0.5}
-          intensity={0.8}
+          luminanceThreshold={0.15}
+          luminanceSmoothing={0.3}
+          intensity={0.5}
           height={300}
         />
       </EffectComposer>

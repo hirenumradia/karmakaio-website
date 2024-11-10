@@ -41,10 +41,10 @@ const KarmaHeading: React.FC = () => {
       scene.add(cubeCameraRef.current);
 
       const textMaterial = new THREE.MeshStandardMaterial({
-        color: 0x00DD00, // Matrix green
-        emissive: 0x003300, // Darker green for the glow effect
+        color: 0xFFFFFF, // Matrix green
+        emissive: 0x000000, // Darker green for the glow effect
         metalness: 0.5,
-        roughness: 0.08,
+        roughness: 0,
         envMap: cubeRenderTargetRef.current.texture,
       });
 

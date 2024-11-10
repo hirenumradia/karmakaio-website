@@ -1,15 +1,32 @@
-// src/components/Shaders.ts
+// src/3d/Shaders.tsx
 import { shaderMaterial } from "@react-three/drei";
-import { extend, ReactThreeFiber } from "@react-three/fiber";
+import { extend } from "@react-three/fiber";
 import React from "react";
-import { ShaderMaterial } from "three";
+import { ShaderMaterial, Vector3, IUniform, Color, ColorRepresentation  } from "three";
 
-const PointShaderMaterial = shaderMaterial(
+// Define the material types
+export interface PointShaderMaterialType extends ShaderMaterial {
+  uniforms: {
+    uTime: IUniform<number>;
+  };
+}
+
+export interface LineShaderMaterialType extends ShaderMaterial {
+  uniforms: {
+    maxDistance: IUniform<number>;
+    uCameraPosition: IUniform<Vector3>;
+    color: IUniform<number>;
+    linewidth: IUniform<number>;
+  };
+}
+
+export const PointShaderMaterial = shaderMaterial(
   {
     uTime: 0,
   },
   // Vertex Shader
   `
+    precision mediump float;
     uniform float uTime;
     varying vec3 vPosition;
     void main() {
@@ -22,6 +39,7 @@ const PointShaderMaterial = shaderMaterial(
   `,
   // Fragment Shader
   `
+    precision mediump float;
     uniform float uTime;
     varying vec3 vPosition;
     void main() {
@@ -32,51 +50,101 @@ const PointShaderMaterial = shaderMaterial(
   `
 ) as unknown as new () => ShaderMaterial;
 
-const LineShaderMaterial = shaderMaterial(
-  {},
+export const LineShaderMaterial = shaderMaterial(
+  {
+    maxDistance: 100.0,
+    uCameraPosition: new Vector3(),
+    color: 0xff0000,
+    linewidth: 1.0,
+  },
   // Vertex Shader
   `
-    varying vec3 vPosition;
+    uniform vec3 uCameraPosition;
+    uniform float maxDistance;
+    varying float vDistance;
+
     void main() {
-      vPosition = position;
+      vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+      vDistance = distance(worldPosition.xyz, uCameraPosition);
       gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     }
   `,
   // Fragment Shader
   `
-    varying vec3 vPosition;
-    vec3 color = vec3(1.0, 0.0, 1.0); // Neon magenta
+    precision mediump float;
+    uniform float maxDistance;
+    uniform vec3 color;
+    uniform float linewidth;
+    varying float vDistance;
+
     void main() {
-      gl_FragColor = vec4(color, 1.0);
+      float attenuation = 1.0 - clamp(vDistance / maxDistance, 0.0, 1.0);
+      gl_FragColor = vec4(color * attenuation, 1.0);
     }
   `
 ) as unknown as new () => ShaderMaterial;
 
 extend({ PointShaderMaterial, LineShaderMaterial });
 
+// Declare module augmentation
 declare module "@react-three/fiber" {
   interface ThreeElements {
-    pointShaderMaterial: ReactThreeFiber.Object3DNode<
-      ShaderMaterial,
-      typeof PointShaderMaterial
-    >;
-    lineShaderMaterial: ReactThreeFiber.Object3DNode<
-      ShaderMaterial,
-      typeof LineShaderMaterial
-    >;
+    pointShaderMaterial: JSX.IntrinsicElements["shaderMaterial"] & {
+      uniforms?: Partial<PointShaderMaterialType["uniforms"]>;
+    };
+    lineShaderMaterial: JSX.IntrinsicElements["shaderMaterial"] & {
+      uniforms?: Partial<LineShaderMaterialType["uniforms"]>;
+    };
   }
 }
 
-type ShaderMaterialProps = JSX.IntrinsicElements["shaderMaterial"] & {
-  [key: string]: any;
+// Props interfaces
+interface PointMaterialProps {
+  uTime?: number;
+}
+
+interface LineMaterialProps {
+  maxDistance?: number;
+  uCameraPosition?: Vector3;
+  color?: ColorRepresentation;
+  linewidth?: number;
+}
+
+// Create typed components
+export const PointMaterial = React.forwardRef<PointShaderMaterialType, PointMaterialProps>(
+  ({ uTime, ...props }, ref) => (
+    <pointShaderMaterial
+      ref={ref}
+      {...props}
+      uniforms-uTime-value={uTime}
+    />
+  )
+);
+
+export const LineMaterial = React.forwardRef<LineShaderMaterialType, LineMaterialProps>(
+  ({ maxDistance = 100, uCameraPosition, color = 0xff0000, linewidth = 1, ...props }, ref) => {
+    // Ensure color is a THREE.Color object
+    const colorValue = color instanceof Color ? color : new Color(color);
+
+    // Ensure uCameraPosition is initialized
+    const cameraPositionValue = uCameraPosition || new Vector3();
+
+    return (
+      <lineShaderMaterial
+        ref={ref}
+        {...props}
+        uniforms-maxDistance-value={maxDistance}
+        uniforms-uCameraPosition-value={cameraPositionValue}
+        uniforms-color-value={colorValue}
+        uniforms-linewidth-value={linewidth}
+      />
+    );
+  }
+);
+
+const checkShaderErrors = (shader: WebGLShader, gl: WebGLRenderingContext) => {
+  const info = gl.getShaderInfoLog(shader);
+  if (info) {
+    console.error('Shader compilation error:', info);
+  }
 };
-
-export const PointMaterial = React.forwardRef<
-  ShaderMaterial,
-  ShaderMaterialProps
->((props, ref) => <pointShaderMaterial ref={ref} {...props} />);
-
-export const LineMaterial = React.forwardRef<
-  ShaderMaterial,
-  ShaderMaterialProps
->((props, ref) => <lineShaderMaterial ref={ref} {...props} />);

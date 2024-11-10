@@ -1,9 +1,9 @@
 // src/components/PointCloud.tsx
 
 import React, { useMemo, useRef, useEffect } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { PointMaterial, LineMaterial } from "./Shaders";
+import { PointMaterial, LineMaterial, LineShaderMaterialType, PointShaderMaterialType } from "./Shaders";
 import {
   generateHeartShape,
   generateSmileyShape,
@@ -23,18 +23,21 @@ export const PointCloud: React.FC<PointCloudProps> = ({
   scale = 1,
 }) => {
   const positionsRef = useRef<THREE.BufferAttribute>(null);
-  const lineGeometryRef = useRef<THREE.BufferGeometry>(null);
+  const lineGeometryRef = useRef<THREE.LineSegments>(null);
+  const lineMaterialRef = useRef<LineShaderMaterialType>(null);
   const prevShape = useRef<string>(shape);
   const progressRef = useRef(0);
-  const pointMaterialRef = useRef<any>();
+  const pointMaterialRef = useRef<PointShaderMaterialType>(null);
   const previousPositions = useRef<Float32Array>(new Float32Array());
 
-  // Function definitions before usage
+  const { camera } = useThree();
+
+  // Function to generate line positions based on KD-Tree
   const generateLinePositions = (
     positions: Float32Array,
     k: number
   ): Float32Array => {
-    const posArray = [];
+    const posArray: number[] = [];
     const numPoints = positions.length / 3;
 
     // Convert positions to point objects
@@ -83,58 +86,60 @@ export const PointCloud: React.FC<PointCloudProps> = ({
     return new Float32Array(posArray);
   };
 
-  // Update time uniform for trippy shader effect
-  useFrame(({ clock }) => {
-    const elapsedTime = clock.getElapsedTime();
-    if (pointMaterialRef.current) {
-      pointMaterialRef.current.uniforms.uTime.value = elapsedTime;
-    }
-  });
-
-  // Generate shapes
-  const shapes = useMemo(() => {
-    return {
-      heart: generateHeartShape(pointCount),
-      smiley: generateSmileyShape(pointCount),
-      saturn: generateSaturnShape(pointCount),
-    };
-  }, [pointCount]);
-
-  const currentPositions = useMemo(() => shapes[shape], [shapes, shape]);
-
-  // Create positionsArray to hold current positions
-  const positionsArray = useMemo(
-    () => new Float32Array(currentPositions.length),
-    [currentPositions.length]
+  // Initialize positionsArray and linePositions
+  const [positionsArray, setPositionsArray] = React.useState<Float32Array>(
+    new Float32Array()
+  );
+  const [linePositions, setLinePositions] = React.useState<Float32Array>(
+    new Float32Array()
   );
 
-  // Initialize positionsArray and previousPositions when the shape changes
   useEffect(() => {
-    positionsArray.set(currentPositions);
+    // Generate initial positions based on shape
+    let currentPositions: Float32Array;
+    switch (shape) {
+      case "heart":
+        currentPositions = generateHeartShape(pointCount);
+        break;
+      case "smiley":
+        currentPositions = generateSmileyShape(pointCount);
+        break;
+      case "saturn":
+        currentPositions = generateSaturnShape(pointCount);
+        break;
+      default:
+        currentPositions = new Float32Array(pointCount * 3);
+    }
+
+    setPositionsArray(currentPositions);
+    setLinePositions(generateLinePositions(currentPositions, 5)); // Example: k=5
     previousPositions.current = currentPositions.slice();
     prevShape.current = shape;
+    progressRef.current = 0;
+  }, [shape, pointCount]);
 
-    if (positionsRef.current) {
-      positionsRef.current.needsUpdate = true;
-    }
-  }, [currentPositions, positionsArray, shape]);
-
-  // Generate line positions when the shape changes
-  const linePositions = useMemo(() => {
-    return generateLinePositions(currentPositions, 3);
-  }, [currentPositions]);
-
-  // Update line geometry when linePositions change
   useEffect(() => {
     if (lineGeometryRef.current && linePositions.length > 0) {
       const positionAttribute = new THREE.BufferAttribute(linePositions, 3);
-      lineGeometryRef.current.setAttribute("position", positionAttribute);
+      lineGeometryRef.current.geometry.setAttribute("position", positionAttribute);
     }
   }, [linePositions]);
 
-  // Update positions during animation
+  // Update uniforms and positions during animation
   useFrame((state, delta) => {
     const positions = positionsRef.current?.array as Float32Array;
+
+    // Update uCameraPosition uniform in LineMaterial
+    if (lineMaterialRef.current) {
+      (lineMaterialRef.current as any).uniforms.uCameraPosition.value.copy(
+        camera.position
+      );
+    }
+
+    // Update uTime uniform in PointMaterial
+    if (pointMaterialRef.current) {
+      (pointMaterialRef.current as any).uniforms.uTime.value += delta;
+    }
 
     if (prevShape.current !== shape) {
       progressRef.current += delta;
@@ -143,7 +148,7 @@ export const PointCloud: React.FC<PointCloudProps> = ({
       for (let i = 0; i < positions.length; i++) {
         positions[i] =
           previousPositions.current[i] +
-          (currentPositions[i] - previousPositions.current[i]) * progress;
+          (positionsArray[i] - previousPositions.current[i]) * progress;
       }
 
       positionsRef.current!.needsUpdate = true;
@@ -151,13 +156,14 @@ export const PointCloud: React.FC<PointCloudProps> = ({
       if (progress >= 1) {
         prevShape.current = shape;
         progressRef.current = 0;
-        previousPositions.current = currentPositions.slice();
+        previousPositions.current = positionsArray.slice();
       }
     }
   });
 
   return (
     <group scale={[scale, scale, scale]}>
+      {/* Points */}
       <points>
         <bufferGeometry>
           <bufferAttribute
@@ -170,9 +176,16 @@ export const PointCloud: React.FC<PointCloudProps> = ({
         </bufferGeometry>
         <PointMaterial ref={pointMaterialRef} />
       </points>
-      <lineSegments>
-        <bufferGeometry ref={lineGeometryRef} />
-        <LineMaterial />
+
+      {/* Glowing Lines */}
+      <lineSegments ref={lineGeometryRef}>
+        <bufferGeometry />
+        <LineMaterial
+          ref={lineMaterialRef}
+          color={0x39FF14}
+          linewidth={2}
+          maxDistance={100.0}
+        />
       </lineSegments>
     </group>
   );
