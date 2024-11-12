@@ -9,6 +9,7 @@ import { Stars } from "@react-three/drei";
 import { useControls } from 'leva';
 import KarmaHeading from "./3d/KarmaHeading";
 import * as THREE from 'three';
+import "./App.css"; // Ensure you import the CSS
 
 const shapes = ["heart", "smiley", "saturn"] as const;
 type ShapeType = (typeof shapes)[number];
@@ -20,7 +21,7 @@ const App: React.FC = () => {
   const [shape, setShape] = useState<ShapeType>(fixedShape);
 
   const handleCanvasClick = () => {
-    if(fixedShape){
+    if (fixedShape) {
       return;
     }
     const nextIndex = (shapeIndex + 1) % shapes.length;
@@ -47,6 +48,14 @@ const App: React.FC = () => {
   });
 
   return (
+    <div className="App">
+      {/* Glass-like Button */}
+      <button
+      className="glass-button"
+      onClick={() => window.open('https://linktr.ee/karmakaio', '_blank')}
+    >
+      STREAM NOW
+    </button>
     <Canvas
       camera={{ position: [0, 1, 35], fov: 50 }}
       onClick={handleCanvasClick}
@@ -115,6 +124,7 @@ const App: React.FC = () => {
         />
       </EffectComposer>
     </Canvas>
+    </div>
   );
 }
 

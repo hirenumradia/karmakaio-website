@@ -1,7 +1,7 @@
 @font-face {
   font-family: 'Nexa';
-  src: url('./fonts/NexaBold.woff2') format('woff2'),
-      url('./fonts/NexaBold.woff') format('woff');
+  src: url('./assets/fonts/NexaBold.woff2') format('woff2'),
+      url('./assets/fonts/NexaBold.woff') format('woff');
   font-weight: bold;
   font-style: normal;
   font-display: swap;
@@ -9,8 +9,8 @@
 
 @font-face {
   font-family: 'Nexa';
-  src: url('./fonts/NexaLight.woff2') format('woff2'),
-      url('./fonts/NexaLight.woff') format('woff');
+  src: url('./assets/fonts/NexaLight.woff2') format('woff2'),
+      url('./assets/fonts/NexaLight.woff') format('woff');
   font-weight: 300;
   font-style: normal;
   font-display: swap;
@@ -18,8 +18,8 @@
 
 @font-face {
   font-family: 'Nexa';
-  src: url('./fonts/Nexa-LightItalic.woff2') format('woff2'),
-      url('./fonts/Nexa-LightItalic.woff') format('woff');
+  src: url('./assets/fonts/Nexa-LightItalic.woff2') format('woff2'),
+      url('./assets/fonts/Nexa-LightItalic.woff') format('woff');
   font-weight: 300;
   font-style: italic;
   font-display: swap;
@@ -27,8 +27,8 @@
 
 @font-face {
   font-family: 'Nexa';
-  src: url('./fonts/Nexa-Heavy.woff2') format('woff2'),
-      url('./fonts/Nexa-Heavy.woff') format('woff');
+  src: url('./assets/fonts/Nexa-Heavy.woff2') format('woff2'),
+      url('./assets/fonts/Nexa-Heavy.woff') format('woff');
   font-weight: 900;
   font-style: normal;
   font-display: swap;
@@ -36,8 +36,8 @@
 
 @font-face {
   font-family: 'Nexa';
-  src: url('./fonts/Nexa-Light.woff2') format('woff2'),
-      url('./fonts/Nexa-Light.woff') format('woff');
+  src: url('./assets/fonts/Nexa-Light.woff2') format('woff2'),
+      url('./assets/fonts/Nexa-Light.woff') format('woff');
   font-weight: 300;
   font-style: normal;
   font-display: swap;
@@ -45,8 +45,8 @@
 
 @font-face {
   font-family: 'Nexa';
-  src: url('./fonts/Nexa-Bold.woff2') format('woff2'),
-      url('./fonts/Nexa-Bold.woff') format('woff');
+  src: url('./assets/fonts/Nexa-Bold.woff2') format('woff2'),
+      url('./assets/fonts/Nexa-Bold.woff') format('woff');
   font-weight: bold;
   font-style: normal;
   font-display: swap;
@@ -54,8 +54,8 @@
 
 @font-face {
   font-family: 'Nexa';
-  src: url('./fonts/Nexa-Thin.woff2') format('woff2'),
-      url('./fonts/Nexa-Thin.woff') format('woff');
+  src: url('./assets/fonts/Nexa-Thin.woff2') format('woff2'),
+      url('./assets/fonts/Nexa-Thin.woff') format('woff');
   font-weight: 100;
   font-style: normal;
   font-display: swap;
@@ -63,8 +63,8 @@
 
 @font-face {
   font-family: 'Nexa';
-  src: url('./fonts/Nexa-RegularItalic.woff2') format('woff2'),
-      url('./fonts/Nexa-RegularItalic.woff') format('woff');
+  src: url('./assets/fonts/Nexa-RegularItalic.woff2') format('woff2'),
+      url('./assets/fonts/Nexa-RegularItalic.woff') format('woff');
   font-weight: normal;
   font-style: italic;
   font-display: swap;
@@ -72,8 +72,8 @@
 
 @font-face {
   font-family: 'Nexa';
-  src: url('./fonts/Nexa-HeavyItalic.woff2') format('woff2'),
-      url('./fonts/Nexa-HeavyItalic.woff') format('woff');
+  src: url('./assets/fonts/Nexa-HeavyItalic.woff2') format('woff2'),
+      url('./assets/fonts/Nexa-HeavyItalic.woff') format('woff');
   font-weight: 900;
   font-style: italic;
   font-display: swap;
@@ -81,8 +81,8 @@
 
 @font-face {
   font-family: 'Nexa';
-  src: url('./fonts/Nexa-Black.woff2') format('woff2'),
-      url('./fonts/Nexa-Black.woff') format('woff');
+  src: url('./assets/fonts/Nexa-Black.woff2') format('woff2'),
+      url('./assets/fonts/Nexa-Black.woff') format('woff');
   font-weight: 900;
   font-style: normal;
   font-display: swap;
@@ -90,8 +90,8 @@
 
 @font-face {
   font-family: 'Nexa';
-  src: url('./fonts/Nexa-ThinItalic.woff2') format('woff2'),
-      url('./fonts/Nexa-ThinItalic.woff') format('woff');
+  src: url('./assets/fonts/Nexa-ThinItalic.woff2') format('woff2'),
+      url('./assets/fonts/Nexa-ThinItalic.woff') format('woff');
   font-weight: 100;
   font-style: italic;
   font-display: swap;
@@ -99,8 +99,8 @@
 
 @font-face {
   font-family: 'Nexa';
-  src: url('./fonts/Nexa-BookItalic.woff2') format('woff2'),
-      url('./fonts/Nexa-BookItalic.woff') format('woff');
+  src: url('./assets/fonts/Nexa-BookItalic.woff2') format('woff2'),
+      url('./assets/fonts/Nexa-BookItalic.woff') format('woff');
   font-weight: normal;
   font-style: italic;
   font-display: swap;
@@ -108,8 +108,8 @@
 
 @font-face {
   font-family: 'Nexa';
-  src: url('./fonts/Nexa-BlackItalic.woff2') format('woff2'),
-      url('./fonts/Nexa-BlackItalic.woff') format('woff');
+  src: url('./assets/fonts/Nexa-BlackItalic.woff2') format('woff2'),
+      url('./assets/fonts/Nexa-BlackItalic.woff') format('woff');
   font-weight: 900;
   font-style: italic;
   font-display: swap;
@@ -117,8 +117,8 @@
 
 @font-face {
   font-family: 'Nexa';
-  src: url('./fonts/Nexa-BoldItalic.woff2') format('woff2'),
-      url('./fonts/Nexa-BoldItalic.woff') format('woff');
+  src: url('./assets/fonts/Nexa-BoldItalic.woff2') format('woff2'),
+      url('./assets/fonts/Nexa-BoldItalic.woff') format('woff');
   font-weight: bold;
   font-style: italic;
   font-display: swap;
@@ -126,8 +126,8 @@
 
 @font-face {
   font-family: 'Nexa';
-  src: url('./fonts/Nexa-Regular.woff2') format('woff2'),
-      url('./fonts/Nexa-Regular.woff') format('woff');
+  src: url('./assets/fonts/Nexa-Regular.woff2') format('woff2'),
+      url('./assets/fonts/Nexa-Regular.woff') format('woff');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -135,8 +135,8 @@
 
 @font-face {
   font-family: 'Nexa';
-  src: url('./fonts/Nexa-Book.woff2') format('woff2'),
-      url('./fonts/Nexa-Book.woff') format('woff');
+  src: url('./assets/fonts/Nexa-Book.woff2') format('woff2'),
+      url('./assets/fonts/Nexa-Book.woff') format('woff');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -144,8 +144,8 @@
 
 @font-face {
   font-family: 'Nexa';
-  src: url('./fonts/Nexa-XBoldItalic.woff2') format('woff2'),
-      url('./fonts/Nexa-XBoldItalic.woff') format('woff');
+  src: url('./assets/fonts/Nexa-XBoldItalic.woff2') format('woff2'),
+      url('./assets/fonts/Nexa-XBoldItalic.woff') format('woff');
   font-weight: bold;
   font-style: italic;
   font-display: swap;
@@ -153,15 +153,15 @@
 
 @font-face {
   font-family: 'Nexa';
-  src: url('./fonts/Nexa-XBold.woff2') format('woff2'),
-      url('./fonts/Nexa-XBold.woff') format('woff');
+  src: url('./assets/fonts/Nexa-XBold.woff2') format('woff2'),
+      url('./assets/fonts/Nexa-XBold.woff') format('woff');
   font-weight: bold;
   font-style: normal;
   font-display: swap;
 }
 
 body {
-  font-family: Nexa, sans-serif;
+  font-family: Nexa, sans-serif !important;
   font-weight: 300;
   font-style: normal;
 }
@@ -169,6 +169,10 @@ body {
 .App {
   text-align: center;
   min-height: 100vh;
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .App-logo {
@@ -210,4 +214,87 @@ body {
   background-color: #000000;
   min-height: 100vh;
   display: flex;
+}
+
+.glass-button {
+  position: absolute;
+  top: 65%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  /* Flexbox for centering content */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Symmetrical padding */
+  padding: 1vw 2vw;
+
+  background: rgba(38, 38, 38, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1vw;
+
+  /* Consistent line height */
+  line-height: 1;
+
+  color: #ffffff;
+  cursor: pointer;
+
+  /* Glassmorphism effect */
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+
+  /* Transition for smooth hover effect */
+  transition: background 0.3s ease, transform 0.3s ease;
+
+  z-index: 10;
+  font-family: 'Nexa', sans-serif !important;
+
+  /* Default font size */
+  font-size: 1.5vw;
+}
+
+.glass-button:hover {
+  background: rgba(128, 128, 128, 0.5);
+  transform: translate(-50%, -50%) scale(1.05); /* Slightly enlarges the button on hover */
+}
+
+/* Responsive Breakpoints */
+
+/* Mobile Devices (up to 480px) */
+@media (max-width: 480px) {
+  .glass-button {
+    padding: 3vh 6vw; /* Increase padding for better touch targets */
+    font-size: 5vw; /* Increase font size for readability */
+    border-radius: 3vw; /* Adjust border radius for aesthetics */
+    min-width: 150px; /* Set a minimum width for the button */
+    max-width: 90%; /* Allow the button to take up most of the screen width */
+  }
+}
+
+/* Small Tablets (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .glass-button {
+    padding: 2vh 4vw; /* Adjust padding for smaller screens */
+    font-size: 4vw; /* Increase font size for readability */
+    border-radius: 2vw; /* Adjust border radius for aesthetics */
+  }
+}
+
+/* Medium Tablets and Small Desktops (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .glass-button {
+    padding: 1.5vh 3vw; /* Adjust padding */
+    font-size: 3vw; /* Adjust font size */
+    border-radius: 1.5vw; /* Adjust border radius */
+  }
+}
+
+/* Large Desktops (1025px and above) */
+@media (min-width: 1025px) {
+  .glass-button {
+    padding: 1vw 2vw; /* Standard padding for larger screens */
+    font-size: 1.5vw; /* Standard font size */
+    border-radius: 1vw; /* Standard border radius */
+  }
 }

@@ -5,6 +5,8 @@ import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 import { useThree, useFrame, useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
 import { CubeCamera, PMREMGenerator } from 'three';
+import technoFont from '../assets/fonts/techno_regular_font.json';
+
 
 const KarmaHeading: React.FC = () => {
   const { scene, gl } = useThree();
@@ -14,7 +16,8 @@ const KarmaHeading: React.FC = () => {
 
   useEffect(() => {
     const loader = new FontLoader();
-    loader.load('/fonts/techno_regular_font.json', (font) => {
+    const font = loader.parse(technoFont);
+
       const textGeometry = new TextGeometry('KARMAKAIO', {
         font: font,
         size: 4.5,
@@ -57,7 +60,6 @@ const KarmaHeading: React.FC = () => {
       textMesh.position.set(0, 0, 5);
       textMeshRef.current = textMesh;
       scene.add(textMesh);
-    });
 
     return () => {
       if (textMeshRef.current) {
