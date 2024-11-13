@@ -237,10 +237,12 @@ body {
   padding: calc(clamp(1.0vw, 1.4rem, 3vw)) 2vw calc(clamp(0.8vw, 1.2rem, 2.5vw)) 2vw; /* Top, Right, Bottom, Left */
 
   /* Background */
-  background: #cd0fc3e6; /* Semi-transparent hot pink */
+  background: rgba(205, 15, 195, 0.9); /* Semi-transparent hot pink */
 
   /* Border Radius */
   border-radius: 0.5em; /* Maintains existing border-radius */
+
+  border: 1px solid #410f38;
 
   /* Font Styling */
   font-family: 'Nexa', sans-serif !important;
@@ -252,14 +254,14 @@ body {
   cursor: pointer;
 
   /* Glassmorphism Effect */
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 
   /* Transition for Smooth Hover Effect */
   transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-image 0.3s ease;
 
   /* Glow Drop Shadow */
-  box-shadow: 0 0 10px #cd0fc399;
+  box-shadow: 0 0 10px rgba(205, 15, 195, 0.6);
 
   /* Position Relative for Pseudo-element */
   position: relative;
@@ -285,19 +287,9 @@ body {
 .glass-button:hover {
   background: #ff1493e6; /* Vibrant hot pink on hover */
   transform: translate(-50%, -50%) scale(1.05); /* Slight enlargement on hover */
-  box-shadow: 0 0 20px rgba(255, 20, 147, 0.8); /* Enhanced glow on hover */
+  box-shadow: 0 0 20px rgba(255, 20, 147, 0.8); 
 }
 
-/* Optional: Change Gradient on Hover */
-.glass-button:hover::before {
-  background: linear-gradient(135deg, #c0c0c0, #ffffff, #c0c0c0); /* Modified gradient on hover */
-}
-
-/* Focus State for Accessibility */
-.glass-button:focus {
-  outline: 2px solid #ff00ff; /* Visible focus outline */
-  outline-offset: 2px;
-}
 
 /* Responsive Breakpoints */
 
