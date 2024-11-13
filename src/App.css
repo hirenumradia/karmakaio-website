@@ -237,7 +237,7 @@ body {
   padding: calc(clamp(1.0vw, 1.4rem, 3vw)) 2vw calc(clamp(0.8vw, 1.2rem, 2.5vw)) 2vw; /* Top, Right, Bottom, Left */
 
   /* Background */
-  background: rgba(205, 15, 195, 0.9); /* Semi-transparent hot pink */
+  background: #cd0fc3e6; /* Semi-transparent hot pink */
 
   /* Border Radius */
   border-radius: 0.5em; /* Maintains existing border-radius */
@@ -259,7 +259,7 @@ body {
   transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-image 0.3s ease;
 
   /* Glow Drop Shadow */
-  box-shadow: 0 0 10px rgba(205, 15, 195, 0.6);
+  box-shadow: 0 0 10px #cd0fc399;
 
   /* Position Relative for Pseudo-element */
   position: relative;
@@ -283,7 +283,7 @@ body {
 
 /* Hover State */
 .glass-button:hover {
-  background: rgba(255, 20, 147, 0.9); /* Vibrant hot pink on hover */
+  background: #ff1493e6; /* Vibrant hot pink on hover */
   transform: translate(-50%, -50%) scale(1.05); /* Slight enlargement on hover */
   box-shadow: 0 0 20px rgba(255, 20, 147, 0.8); /* Enhanced glow on hover */
 }

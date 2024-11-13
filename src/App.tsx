@@ -99,6 +99,11 @@ const App: React.FC = () => {
           color={0x00aaff} 
         />
 
+        {/* Colored Point Lights */}
+        <pointLight position={[-10, 10, 10]} intensity={1} color="#ff007f" />
+        <pointLight position={[10, -10, 10]} intensity={1} color="#00aaff" />
+        <pointLight position={[10, 10, -10]} intensity={1} color="#aaff00" />
+
         <Controls />
         <Stars
           radius={100}

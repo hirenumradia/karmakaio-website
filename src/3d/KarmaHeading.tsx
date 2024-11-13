@@ -56,6 +56,8 @@ const KarmaHeading: React.FC = () => {
       roughness: 0.1,
       envMap: renderTarget.texture,
       envMapIntensity: 1, // Fixed intensity
+      emissive: new THREE.Color(0x5435ac), // Soft pink emissive color
+      emissiveIntensity: 0.4, // Controls the brightness of emissive color
     });
 
     materialRef.current = textMaterial;
@@ -97,9 +99,11 @@ const KarmaHeading: React.FC = () => {
       // Update the environment map
       cubeCameraRef.current.update(gl, scene);
 
-      // Re-enable visibility and layers
+      // Re-enable Layer 1 on the main camera to render ParticleSwarm
+      camera.layers.enable(1); // **Added this line**
+
+      // Re-enable visibility
       textMeshRef.current.visible = true;
-      camera.layers.enable(1); // Re-enable layer 1 for ParticleSwarm
 
       // Update rotation and envMapIntensity
       textMeshRef.current.rotation.y = Math.sin(Date.now() * 0.0002) * 0.1;
