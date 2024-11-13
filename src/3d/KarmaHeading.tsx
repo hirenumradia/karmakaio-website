@@ -7,10 +7,10 @@ import * as THREE from 'three';
 import technoFont from '../assets/fonts/techno_regular_font.json';
 
 const KarmaHeading: React.FC = () => {
-  const { scene, gl, size } = useThree();
+  const { scene, gl, size, camera } = useThree();
   const textMeshRef = useRef<THREE.Mesh | null>(null);
   const materialRef = useRef<THREE.MeshStandardMaterial | null>(null);
-  const cubeCameraRef = useRef<THREE.CubeCamera>();
+  const cubeCameraRef = useRef<THREE.CubeCamera | null>(null);
 
   useEffect(() => {
     const loader = new FontLoader();
@@ -39,8 +39,14 @@ const KarmaHeading: React.FC = () => {
       -textDepth / 2
     );
 
-    const renderTarget = new THREE.WebGLCubeRenderTarget(256);
+    const renderTarget = new THREE.WebGLCubeRenderTarget(256, {
+      format: THREE.RGBAFormat,
+      generateMipmaps: true,
+      minFilter: THREE.LinearMipmapLinearFilter
+    });
+
     const cubeCamera = new THREE.CubeCamera(0.1, 1000, renderTarget);
+    cubeCamera.position.set(0, 0, 5); // Match the textMesh position
     scene.add(cubeCamera);
     cubeCameraRef.current = cubeCamera;
 
@@ -49,7 +55,7 @@ const KarmaHeading: React.FC = () => {
       metalness: 1,
       roughness: 0.1,
       envMap: renderTarget.texture,
-      envMapIntensity: 1,
+      envMapIntensity: 1, // Fixed intensity
     });
 
     materialRef.current = textMaterial;
@@ -62,21 +68,41 @@ const KarmaHeading: React.FC = () => {
     return () => {
       if (textMeshRef.current) {
         scene.remove(textMeshRef.current);
+        textMeshRef.current.geometry.dispose();
+        if (Array.isArray(textMeshRef.current.material)) {
+          textMeshRef.current.material.forEach(material => material.dispose());
+        } else {
+          textMeshRef.current.material.dispose();
+        }
       }
       if (cubeCameraRef.current) {
         scene.remove(cubeCameraRef.current);
+        cubeCameraRef.current.renderTarget.dispose();
       }
     };
   }, [scene, gl]);
 
   useFrame(() => {
     if (textMeshRef.current && materialRef.current && cubeCameraRef.current) {
-      textMeshRef.current.visible = false;
-      cubeCameraRef.current.update(gl, scene);
-      textMeshRef.current.visible = true;
+      // Update CubeCamera position to match the text mesh
+      cubeCameraRef.current.position.copy(textMeshRef.current.position);
 
+      // Hide the text mesh and remove cube camera from the scene
+      textMeshRef.current.visible = false;
+
+      // Exclude Layer 1 (ParticleSwarm) from CubeCamera's capture
+      camera.layers.enable(0); // Ensure CubeCamera captures layer 0
+      camera.layers.disable(1); // Disable layer 1
+
+      // Update the environment map
+      cubeCameraRef.current.update(gl, scene);
+
+      // Re-enable visibility and layers
+      textMeshRef.current.visible = true;
+      camera.layers.enable(1); // Re-enable layer 1 for ParticleSwarm
+
+      // Update rotation and envMapIntensity
       textMeshRef.current.rotation.y = Math.sin(Date.now() * 0.0002) * 0.1;
-      
       materialRef.current.envMapIntensity = 0.8 + Math.sin(Date.now() * 0.001) * 0.2;
     }
   });

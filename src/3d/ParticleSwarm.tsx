@@ -1,7 +1,7 @@
 // src/components/ParticleSwarm.tsx
 
-import React, { useRef, useMemo } from "react";
-import { useFrame, extend, ReactThreeFiber } from "@react-three/fiber";
+import React, { useRef, useMemo, useEffect } from "react";
+import { useFrame, extend, ReactThreeFiber, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { shaderMaterial } from "@react-three/drei";
 import glsl from "babel-plugin-glsl/macro";
@@ -238,7 +238,8 @@ export const ParticleSwarm: React.FC<ParticleSwarmProps> = ({   trailLength,
   spiralSpeed,
   spiralTightness,
   chaosAmount }) => {
-  const swarmRef = useRef<THREE.Points>(null);
+  const { scene } = useThree();
+  const swarmRef = useRef<THREE.Points>(null!);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   
 
@@ -304,6 +305,19 @@ export const ParticleSwarm: React.FC<ParticleSwarmProps> = ({   trailLength,
 
     return { positions, colors, sizes };
   }, []);
+
+  useEffect(() => {
+    // Assign ParticleSwarm to layer 1
+    swarmRef.current.layers.set(1);
+
+    // Add to scene
+    scene.add(swarmRef.current);
+
+    return () => {
+      scene.remove(swarmRef.current);
+      swarmRef.current.geometry.dispose();
+    };
+  }, [scene]);
 
   useFrame(({ clock }) => {
     if (materialRef.current) {

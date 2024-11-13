@@ -45,7 +45,7 @@ const App: React.FC = () => {
      noiseSpeed: { value: 0.2, min: 0, max: 2, step: 0.1 },
      spiralSpeed: { value: 0.4, min: 0, max: 2, step: 0.1 },
      spiralTightness: { value: 0.9, min: 0.1, max: 5, step: 0.1 },
-     chaosAmount: { value: 0.60, min: 0, max: 1, step: 0.01 },
+     chaosAmount: { value: 0.6, min: 0, max: 1, step: 0.01 },
   });
 
   return (
@@ -67,6 +67,7 @@ const App: React.FC = () => {
           toneMappingExposure: 1,
           outputColorSpace: 'srgb',
         }}
+        camera={{ position: [0, 1, 35], fov: 80 }}
       >
         {/* Responsive Camera */}
         <ResponsiveCamera />

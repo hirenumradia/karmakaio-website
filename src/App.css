@@ -240,7 +240,7 @@ body {
   background: rgba(205, 15, 195, 0.9); /* Semi-transparent hot pink */
 
   /* Border Radius */
-  border-radius: calc(clamp(0.5vw, 1vw, 1.5vw)); /* Maintains existing border-radius */
+  border-radius: 0.5em; /* Maintains existing border-radius */
 
   /* Font Styling */
   font-family: 'Nexa', sans-serif !important;
@@ -333,7 +333,7 @@ body {
 /* Large Desktops (1025px and above) */
 @media (min-width: 1025px) {
   .glass-button {
-    padding: calc(clamp(0.8vh, 1.2rem, 1.5vh)) 2vw calc(clamp(0.5vh, 0.8rem, 1.2vh)) 2vw; /* Top, Right, Bottom, Left */
+    padding: calc(clamp(0.9vh, 1.2rem, 1.5vh)) 2vw calc(clamp(0.5vh, 0.8rem, 1.2vh)) 2vw; /* Top, Right, Bottom, Left */
     font-size: calc(clamp(1.0rem, 2vw, 1.8rem));
     /* border-radius: calc(clamp(0.5vw, 1vw, 1.2vw)); */
   }
