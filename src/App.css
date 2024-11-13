@@ -216,47 +216,87 @@ body {
   display: flex;
 }
 
+/* Global Box Sizing */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Glass-like Button */
 .glass-button {
   position: absolute;
-  top: 65%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 65%; /* Centers vertically within the parent */
+  left: 50%; /* Centers horizontally within the parent */
+  transform: translate(-50%, -50%); /* Adjusts for the button's own dimensions */
 
   /* Flexbox for centering content */
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: center; /* Vertically centers the text */
+  justify-content: center; /* Horizontally centers the text */
 
-  /* Symmetrical padding */
-  padding: 1vw 2vw;
+  /* Responsive Padding using calc(clamp(...)) */
+  padding: calc(clamp(1.0vw, 1.4rem, 3vw)) 2vw calc(clamp(0.8vw, 1.2rem, 2.5vw)) 2vw; /* Top, Right, Bottom, Left */
 
-  background: rgba(38, 38, 38, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 1vw;
+  /* Background */
+  background: rgba(205, 15, 195, 0.9); /* Semi-transparent hot pink */
 
-  /* Consistent line height */
-  line-height: 1;
+  /* Border Radius */
+  border-radius: calc(clamp(0.5vw, 1vw, 1.5vw)); /* Maintains existing border-radius */
 
-  color: #ffffff;
+  /* Font Styling */
+  font-family: 'Nexa', sans-serif !important;
+  font-size: calc(clamp(1.2rem, 1.5vw, 2rem)); /* Maintains existing font-size */
+  line-height: 1; /* Ensures text is vertically centered */
+
+  /* Text Color and Cursor */
+  color: #000000;
   cursor: pointer;
 
-  /* Glassmorphism effect */
+  /* Glassmorphism Effect */
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
 
-  /* Transition for smooth hover effect */
-  transition: background 0.3s ease, transform 0.3s ease;
+  /* Transition for Smooth Hover Effect */
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-image 0.3s ease;
 
-  z-index: 10;
-  font-family: 'Nexa', sans-serif !important;
+  /* Glow Drop Shadow */
+  box-shadow: 0 0 10px rgba(205, 15, 195, 0.6);
 
-  /* Default font size */
-  font-size: 1.5vw;
+  /* Position Relative for Pseudo-element */
+  position: relative;
+
+  /* Ensure the button stays above other elements */
+  z-index: 1; /* Set higher than pseudo-element */
 }
 
+/* Pseudo-element for Gradient Border */
+.glass-button::before {
+  content: "";
+  position: absolute;
+  top: -2px; /* Adjust based on desired border width */
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: inherit; /* Match the button's border-radius */
+  /* background: linear-gradient(135deg, #e0e0e0, #ffffff, #e0e0e0);  */
+  z-index: -1; /* Place behind the button */
+}
+
+/* Hover State */
 .glass-button:hover {
-  background: rgba(128, 128, 128, 0.5);
-  transform: translate(-50%, -50%) scale(1.05); /* Slightly enlarges the button on hover */
+  background: rgba(255, 20, 147, 0.9); /* Vibrant hot pink on hover */
+  transform: translate(-50%, -50%) scale(1.05); /* Slight enlargement on hover */
+  box-shadow: 0 0 20px rgba(255, 20, 147, 0.8); /* Enhanced glow on hover */
+}
+
+/* Optional: Change Gradient on Hover */
+.glass-button:hover::before {
+  background: linear-gradient(135deg, #c0c0c0, #ffffff, #c0c0c0); /* Modified gradient on hover */
+}
+
+/* Focus State for Accessibility */
+.glass-button:focus {
+  outline: 2px solid #ff00ff; /* Visible focus outline */
+  outline-offset: 2px;
 }
 
 /* Responsive Breakpoints */
@@ -264,37 +304,37 @@ body {
 /* Mobile Devices (up to 480px) */
 @media (max-width: 480px) {
   .glass-button {
-    padding: 3vh 6vw; /* Increase padding for better touch targets */
-    font-size: 5vw; /* Increase font size for readability */
-    border-radius: 3vw; /* Adjust border radius for aesthetics */
-    min-width: 150px; /* Set a minimum width for the button */
-    max-width: 90%; /* Allow the button to take up most of the screen width */
+    padding: calc(clamp(1.5vh, 1.2rem, 2vh)) 4vw calc(clamp(1vh, 1rem, 2vh)) 4vw; /* Top, Right, Bottom, Left */
+    font-size: calc(clamp(1.5rem, 4vw, 2.5rem));
+    /* border-radius: calc(clamp(1vw, 1.5vw, 2vw)); */
+    min-width: 150px; /* Ensures the button doesn't get too small */
+    max-width: 90%; /* Allows the button to take up most of the screen width */
   }
 }
 
 /* Small Tablets (481px - 768px) */
 @media (min-width: 481px) and (max-width: 768px) {
   .glass-button {
-    padding: 2vh 4vw; /* Adjust padding for smaller screens */
-    font-size: 4vw; /* Increase font size for readability */
-    border-radius: 2vw; /* Adjust border radius for aesthetics */
+    padding: calc(clamp(1.2vh, 1.5rem, 2vh)) 3vw calc(clamp(0.9vh, 1.1rem, 1.8vh)) 3vw; /* Top, Right, Bottom, Left */
+    font-size: calc(clamp(1.3rem, 3.5vw, 2.2rem));
+    /* border-radius: calc(clamp(0.8vw, 1.3vw, 1.8vw)); */
   }
 }
 
 /* Medium Tablets and Small Desktops (769px - 1024px) */
 @media (min-width: 769px) and (max-width: 1024px) {
   .glass-button {
-    padding: 1.5vh 3vw; /* Adjust padding */
-    font-size: 3vw; /* Adjust font size */
-    border-radius: 1.5vw; /* Adjust border radius */
+    padding: calc(clamp(1.0vh, 1.3rem, 1.8vh)) 2.5vw calc(clamp(0.7vh, 1rem, 1.5vh)) 2.5vw; /* Top, Right, Bottom, Left */
+    font-size: calc(clamp(1.1rem, 3vw, 2rem));
+    /* border-radius: calc(clamp(0.6vw, 1.2vw, 1.5vw)); */
   }
 }
 
 /* Large Desktops (1025px and above) */
 @media (min-width: 1025px) {
   .glass-button {
-    padding: 1vw 2vw; /* Standard padding for larger screens */
-    font-size: 1.5vw; /* Standard font size */
-    border-radius: 1vw; /* Standard border radius */
+    padding: calc(clamp(0.8vh, 1.2rem, 1.5vh)) 2vw calc(clamp(0.5vh, 0.8rem, 1.2vh)) 2vw; /* Top, Right, Bottom, Left */
+    font-size: calc(clamp(1.0rem, 2vw, 1.8rem));
+    /* border-radius: calc(clamp(0.5vw, 1vw, 1.2vw)); */
   }
 }
