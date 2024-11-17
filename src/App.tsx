@@ -11,6 +11,7 @@ import KarmaHeading from "./3d/KarmaHeading";
 import ResponsiveCamera from "./3d/ResponsiveCamera"; // Import the ResponsiveCamera
 import * as THREE from 'three';
 import "./App.css"; // Ensure you import the CSS
+import AudioPlayer from "./components/AudioPlayer"; // Import the AudioPlayer component
 
 const shapes = ["heart", "smiley", "saturn"] as const;
 type ShapeType = (typeof shapes)[number];
@@ -55,6 +56,9 @@ const App: React.FC = () => {
 
   return (
     <div className="App">
+      {/* Audio Player anchored at the bottom */}
+      <AudioPlayer />
+
       {/* Glass-like Button */}
       <button
         className="glass-button"

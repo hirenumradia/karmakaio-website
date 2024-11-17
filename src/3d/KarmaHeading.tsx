@@ -79,47 +79,27 @@ const KarmaHeading: React.FC = () => {
     scene.add(textMesh);
 
     const pointLight1 = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
-    pointLight1.castShadow = true;
-    // pointLight1.shadow.mapSize.width = 1024;
-    // pointLight1.shadow.mapSize.height = 1024;
-    // pointLight1.shadow.camera.near = 0.1;
-    // pointLight1.shadow.camera.far = 200;
-    // pointLight1.shadow.bias = -0.001;
-    // pointLight1.decay = 2;
+
     pointLight1.position.set(10, 5, 10);
     scene.add(pointLight1);
     // lightHelper1.current = new THREE.PointLightHelper(pointLight1, 0.5);
     // scene.add(lightHelper1.current);
 
     const pointLight2 = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
-    pointLight2.castShadow = true;
-    // pointLight2.shadow.mapSize.width = 1024;
-    // pointLight2.shadow.mapSize.height = 1024;
-    // pointLight2.shadow.camera.near = 0.1;
-    // pointLight2.shadow.camera.far = 200;
-    // pointLight2.shadow.bias = -0.001;
-    // pointLight2.decay = 2;
+
     pointLight2.position.set(2, 2, 5);
     scene.add(pointLight2);
     // lightHelper2.current = new THREE.PointLightHelper(pointLight2, 0.5);
     // scene.add(lightHelper2.current);
 
     const pointLight3 = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
-    pointLight3.castShadow = true;
-    // pointLight3.shadow.mapSize.width = 1024;
-    // pointLight3.shadow.mapSize.height = 1024;
-    // pointLight3.shadow.camera.near = 0.1;
-    // pointLight3.shadow.camera.far = 200;
-    // pointLight3.shadow.bias = -0.001;
-    // pointLight3.decay = 2;
+
     pointLight3.position.set(-10, 0, 10);
     scene.add(pointLight3);
     // lightHelper3.current = new THREE.PointLightHelper(pointLight3, 0.5);
     // scene.add(lightHelper3.current);
 
-    pointLight1.castShadow = true;
-    pointLight2.castShadow = true;
-    pointLight3.castShadow = true;
+
 
     if (textMeshRef.current) {
       textMeshRef.current.castShadow = true;
