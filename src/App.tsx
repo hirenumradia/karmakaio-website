@@ -1,5 +1,5 @@
 // src/App.tsx
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { PointCloud } from "./3d/PointCloud";
 import { Controls } from "./3d/Controls";
@@ -48,15 +48,20 @@ const App: React.FC = () => {
      chaosAmount: { value: 0.6, min: 0, max: 1, step: 0.01 },
   });
 
+  // References for lights to attach helpers
+  const directionalLightRef = useRef<THREE.DirectionalLight>(null);
+  const pointLight1Ref = useRef<THREE.PointLight>(null);
+  const pointLight2Ref = useRef<THREE.PointLight>(null);
+
   return (
     <div className="App">
       {/* Glass-like Button */}
       <button
         className="glass-button"
         onClick={() => window.open('https://linktr.ee/karmakaio', '_blank')}
-        aria-label="Stream Now" // Added for accessibility
+        aria-label="EXPLORE" // Added for accessibility
       >
-        STREAM NOW
+        DISCOVER
       </button>
       <Canvas
         onClick={handleCanvasClick}
@@ -66,7 +71,15 @@ const App: React.FC = () => {
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1,
           outputColorSpace: 'srgb',
-        }}
+          shadowMap: {
+            enabled: true,
+            type: THREE.PCFSoftShadowMap,
+            autoUpdate: true,
+            needsUpdate: false,
+            // render: () => {},  
+            // cullFace:  () => {},    
+          },
+        } as Partial<THREE.WebGLRendererParameters>}
         camera={{ position: [0, 1, 35], fov: 80 }}
       >
         {/* Responsive Camera */}
@@ -80,29 +93,58 @@ const App: React.FC = () => {
         />
         <ambientLight intensity={0.3} />
         <directionalLight
+          ref={directionalLightRef}
           position={[5, 10, 7.5]}
           intensity={1.5}
           castShadow
-          shadow-mapSize-width={1024}
-          shadow-mapSize-height={1024}
+          shadow-mapSize-width={2048}
+          shadow-mapSize-height={2048}
           shadow-camera-near={0.5}
           shadow-camera-far={500}
+          shadow-camera-left={-50}
+          shadow-camera-right={50}
+          shadow-camera-top={50}
+          shadow-camera-bottom={-50}
+          shadow-radius={10}
+          shadow-bias={-0.0001}
         />
         <pointLight 
+          ref={pointLight1Ref}
           position={[-10, -10, -10]} 
           intensity={0.5} 
           color={0xffaa00} 
+          castShadow
+          shadow-mapSize-width={512}
+          shadow-mapSize-height={512}
+          shadow-bias={-0.001}
         />
         <pointLight 
+          ref={pointLight2Ref}
           position={[10, 10, 10]} 
           intensity={0.5} 
           color={0x00aaff} 
+          castShadow
+          shadow-mapSize-width={512}
+          shadow-mapSize-height={512}
+          shadow-bias={-0.001}
         />
 
-        {/* Colored Point Lights */}
-        <pointLight position={[-10, 10, 10]} intensity={1} color="#ff007f" />
-        <pointLight position={[10, -10, 10]} intensity={1} color="#00aaff" />
-        <pointLight position={[10, 10, -10]} intensity={1} color="#aaff00" />
+        {/* Shadow Receiving Plane */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -5, 0]} receiveShadow>
+          <planeGeometry args={[100, 100]} />
+          <shadowMaterial opacity={0.3} />
+        </mesh>
+
+        {/* Optional: Add helpers for debugging */}
+        {directionalLightRef.current && (
+          <directionalLightHelper args={[directionalLightRef.current, 1]} />
+        )}
+        {pointLight1Ref.current && (
+          <pointLightHelper args={[pointLight1Ref.current, 0.5]} />
+        )}
+        {pointLight2Ref.current && (
+          <pointLightHelper args={[pointLight2Ref.current, 0.5]} />
+        )}
 
         <Controls />
         <Stars

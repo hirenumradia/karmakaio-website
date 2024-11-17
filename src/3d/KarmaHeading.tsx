@@ -12,7 +12,17 @@ const KarmaHeading: React.FC = () => {
   const materialRef = useRef<THREE.MeshStandardMaterial | null>(null);
   const cubeCameraRef = useRef<THREE.CubeCamera | null>(null);
 
+  // Refs for light helpers
+  const lightHelper1 = useRef<THREE.PointLightHelper | null>(null);
+  const lightHelper2 = useRef<THREE.PointLightHelper | null>(null);
+  const lightHelper3 = useRef<THREE.PointLightHelper | null>(null);
+
   useEffect(() => {
+    gl.shadowMap.enabled = true;
+    gl.shadowMap.type = THREE.PCFSoftShadowMap;
+    gl.toneMapping = THREE.ACESFilmicToneMapping;
+    gl.toneMappingExposure = 1.5;
+
     const loader = new FontLoader();
     const font = loader.parse(technoFont);
 
@@ -39,7 +49,7 @@ const KarmaHeading: React.FC = () => {
       -textDepth / 2
     );
 
-    const renderTarget = new THREE.WebGLCubeRenderTarget(256, {
+    const renderTarget = new THREE.WebGLCubeRenderTarget(1024, {
       format: THREE.RGBAFormat,
       generateMipmaps: true,
       minFilter: THREE.LinearMipmapLinearFilter
@@ -55,9 +65,10 @@ const KarmaHeading: React.FC = () => {
       metalness: 1,
       roughness: 0.1,
       envMap: renderTarget.texture,
-      envMapIntensity: 1, // Fixed intensity
-      emissive: new THREE.Color(0x5435ac), // Soft pink emissive color
-      emissiveIntensity: 0.4, // Controls the brightness of emissive color
+      envMapIntensity: 1,
+      emissive: new THREE.Color(0x5435ac),
+      // emissive: new THREE.Color(0xFFFFFF),
+      emissiveIntensity: 10,
     });
 
     materialRef.current = textMaterial;
@@ -66,6 +77,54 @@ const KarmaHeading: React.FC = () => {
     textMesh.position.set(0, 0, 5);
     textMeshRef.current = textMesh;
     scene.add(textMesh);
+
+    const pointLight1 = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+    pointLight1.castShadow = true;
+    // pointLight1.shadow.mapSize.width = 1024;
+    // pointLight1.shadow.mapSize.height = 1024;
+    // pointLight1.shadow.camera.near = 0.1;
+    // pointLight1.shadow.camera.far = 200;
+    // pointLight1.shadow.bias = -0.001;
+    // pointLight1.decay = 2;
+    pointLight1.position.set(10, 5, 10);
+    scene.add(pointLight1);
+    // lightHelper1.current = new THREE.PointLightHelper(pointLight1, 0.5);
+    // scene.add(lightHelper1.current);
+
+    const pointLight2 = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+    pointLight2.castShadow = true;
+    // pointLight2.shadow.mapSize.width = 1024;
+    // pointLight2.shadow.mapSize.height = 1024;
+    // pointLight2.shadow.camera.near = 0.1;
+    // pointLight2.shadow.camera.far = 200;
+    // pointLight2.shadow.bias = -0.001;
+    // pointLight2.decay = 2;
+    pointLight2.position.set(2, 2, 5);
+    scene.add(pointLight2);
+    // lightHelper2.current = new THREE.PointLightHelper(pointLight2, 0.5);
+    // scene.add(lightHelper2.current);
+
+    const pointLight3 = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+    pointLight3.castShadow = true;
+    // pointLight3.shadow.mapSize.width = 1024;
+    // pointLight3.shadow.mapSize.height = 1024;
+    // pointLight3.shadow.camera.near = 0.1;
+    // pointLight3.shadow.camera.far = 200;
+    // pointLight3.shadow.bias = -0.001;
+    // pointLight3.decay = 2;
+    pointLight3.position.set(-10, 0, 10);
+    scene.add(pointLight3);
+    // lightHelper3.current = new THREE.PointLightHelper(pointLight3, 0.5);
+    // scene.add(lightHelper3.current);
+
+    pointLight1.castShadow = true;
+    pointLight2.castShadow = true;
+    pointLight3.castShadow = true;
+
+    if (textMeshRef.current) {
+      textMeshRef.current.castShadow = true;
+      textMeshRef.current.receiveShadow = true;
+    }
 
     return () => {
       if (textMeshRef.current) {
@@ -80,6 +139,20 @@ const KarmaHeading: React.FC = () => {
       if (cubeCameraRef.current) {
         scene.remove(cubeCameraRef.current);
         cubeCameraRef.current.renderTarget.dispose();
+      }
+
+      // Remove light helpers
+      if (lightHelper1.current) {
+        scene.remove(lightHelper1.current);
+        lightHelper1.current.dispose();
+      }
+      if (lightHelper2.current) {
+        scene.remove(lightHelper2.current);
+        lightHelper2.current.dispose();
+      }
+      if (lightHelper3.current) {
+        scene.remove(lightHelper3.current);
+        lightHelper3.current.dispose();
       }
     };
   }, [scene, gl]);

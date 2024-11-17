@@ -237,10 +237,13 @@ body {
   padding: calc(clamp(1.0vw, 1.4rem, 3vw)) 2vw calc(clamp(0.8vw, 1.2rem, 2.5vw)) 2vw; /* Top, Right, Bottom, Left */
 
   /* Background */
-  background: rgba(205, 15, 195, 0.9); /* Semi-transparent hot pink */
+  background: linear-gradient(135deg, rgba(205, 15, 195, 0.9), rgba(96, 12, 156, 0.9)); /* Semi-transparent hot pink to purple gradient */
+
+  background: linear-gradient(217deg, rgba(205, 15, 195, 1), rgba(133, 7, 223, 0.1) 90.71%),
+  linear-gradient(336deg, rgba(5, 236, 5, 0.8), rgba(212, 231, 6, 0.9) 70.71%);
 
   /* Border Radius */
-  border-radius: 0.5em; /* Maintains existing border-radius */
+  border-radius: 0.1em; /* Maintains existing border-radius */
 
   border: 1px solid #410f38;
 
@@ -254,8 +257,8 @@ body {
   cursor: pointer;
 
   /* Glassmorphism Effect */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 
   /* Transition for Smooth Hover Effect */
   transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-image 0.3s ease;
@@ -285,7 +288,12 @@ body {
 
 /* Hover State */
 .glass-button:hover {
-  background: #ff1493e6; /* Vibrant hot pink on hover */
+  /* background: linear-gradient(135deg, rgba(255, 20, 146, 0.902), rgba(127, 11, 210, 0.9));  */
+
+  background: linear-gradient(217deg, rgba(255, 20, 146, 0.9), rgba(177, 233, 10, 0.8) 70.71%),
+  linear-gradient(127deg, rgba(114, 203, 12,0.9), rgba(114, 203, 12, 0.8) 70.71%),
+  linear-gradient(336deg, rgba(223, 227, 18, 0.8), rgba(212, 231, 6, 0.9) 70.71%);
+
   transform: translate(-50%, -50%) scale(1.05); /* Slight enlargement on hover */
   box-shadow: 0 0 20px rgba(255, 20, 147, 0.8); 
 }
