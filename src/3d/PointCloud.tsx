@@ -154,7 +154,8 @@ export const PointCloud: React.FC<PointCloudProps> = ({
         )
       );
     }
-  }, []);
+  });
+  
 
   // Animation frame update
   useFrame((state, delta) => {
