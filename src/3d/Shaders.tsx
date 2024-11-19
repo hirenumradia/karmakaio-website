@@ -1,28 +1,25 @@
 // src/3d/Shaders.tsx
 import { shaderMaterial } from "@react-three/drei";
-import { extend } from "@react-three/fiber";
+import { extend, MaterialNode  } from "@react-three/fiber";
 import React from "react";
-import { ShaderMaterial, Vector3, IUniform, Color, ColorRepresentation  } from "three";
+import { Vector3, Color, ColorRepresentation, ShaderMaterial } from "three";
 
-// Define the material types
-export interface PointShaderMaterialType extends ShaderMaterial {
-  uniforms: {
-    uTime: IUniform<number>;
-  };
+// 1. Define Uniform Interfaces with Direct Value Types
+interface PointUniforms {
+  uTime: number;
 }
 
-export interface LineShaderMaterialType extends ShaderMaterial {
-  uniforms: {
-    maxDistance: IUniform<number>;
-    uCameraPosition: IUniform<Vector3>;
-    color: IUniform<number>;
-    linewidth: IUniform<number>;
-  };
+interface LineUniforms {
+  maxDistance: number;
+  uCameraPosition: Vector3;
+  color: ColorRepresentation;
+  linewidth: number;
 }
 
+// 2. Create Shader Materials Using `shaderMaterial` with Correct Uniform Definitions
 export const PointShaderMaterial = shaderMaterial(
   {
-    uTime: 0,
+    uTime: 0 as number,
   },
   // Vertex Shader
   `
@@ -48,14 +45,14 @@ export const PointShaderMaterial = shaderMaterial(
       gl_FragColor = vec4(color, 1.0);
     }
   `
-) as unknown as new () => ShaderMaterial;
+);
 
 export const LineShaderMaterial = shaderMaterial(
   {
-    maxDistance: 100.0,
+    maxDistance: 100.0 as number,
     uCameraPosition: new Vector3(),
-    color: 0xff0000,
-    linewidth: 1.0,
+    color: new Color(0xff0000),
+    linewidth: 1.0 as number,
   },
   // Vertex Shader
   `
@@ -82,23 +79,35 @@ export const LineShaderMaterial = shaderMaterial(
       gl_FragColor = vec4(color * attenuation, 1.0);
     }
   `
-) as unknown as new () => ShaderMaterial;
+);
 
+// 3. Extend React Three Fiber's Intrinsic Elements with Custom Materials
 extend({ PointShaderMaterial, LineShaderMaterial });
 
-// Declare module augmentation
-declare module "@react-three/fiber" {
+// 4. Module Augmentation for TypeScript to Recognize Custom Materials
+declare module '@react-three/fiber' {
   interface ThreeElements {
-    pointShaderMaterial: JSX.IntrinsicElements["shaderMaterial"] & {
-      uniforms?: Partial<PointShaderMaterialType["uniforms"]>;
+    pointShaderMaterial: JSX.IntrinsicElements['shaderMaterial'] & {
+      uniforms: {
+        uTime: { value: number };
+      };
     };
-    lineShaderMaterial: JSX.IntrinsicElements["shaderMaterial"] & {
-      uniforms?: Partial<LineShaderMaterialType["uniforms"]>;
+    lineShaderMaterial: JSX.IntrinsicElements['shaderMaterial'] & {
+      uniforms: {
+        maxDistance: { value: number };
+        uCameraPosition: { value: Vector3 };
+        color: { value: ColorRepresentation };
+        linewidth: { value: number };
+      };
     };
   }
 }
 
-// Props interfaces
+// 5. Define Material Instance Types
+type PointShaderMaterialType = InstanceType<typeof PointShaderMaterial>;
+type LineShaderMaterialType = InstanceType<typeof LineShaderMaterial>;
+
+// 6. Define Props Interfaces for React Components
 interface PointMaterialProps {
   uTime?: number;
 }
@@ -110,41 +119,30 @@ interface LineMaterialProps {
   linewidth?: number;
 }
 
-// Create typed components
+// 7. Create React Components with Forwarded Refs and Correct Typing
 export const PointMaterial = React.forwardRef<PointShaderMaterialType, PointMaterialProps>(
-  ({ uTime, ...props }, ref) => (
+  ({ uTime = 0, ...props }, ref) => (
     <pointShaderMaterial
       ref={ref}
       {...props}
-      uniforms-uTime-value={uTime}
+      uniforms={{
+        uTime: { value: uTime }
+      }}
     />
   )
 );
 
 export const LineMaterial = React.forwardRef<LineShaderMaterialType, LineMaterialProps>(
-  ({ maxDistance = 100, uCameraPosition, color = 0xff0000, linewidth = 1, ...props }, ref) => {
-    // Ensure color is a THREE.Color object
-    const colorValue = color instanceof Color ? color : new Color(color);
-
-    // Ensure uCameraPosition is initialized
-    const cameraPositionValue = uCameraPosition || new Vector3();
-
-    return (
-      <lineShaderMaterial
-        ref={ref}
-        {...props}
-        uniforms-maxDistance-value={maxDistance}
-        uniforms-uCameraPosition-value={cameraPositionValue}
-        uniforms-color-value={colorValue}
-        uniforms-linewidth-value={linewidth}
-      />
-    );
-  }
+  ({ maxDistance = 100, uCameraPosition = new Vector3(), color = 0xffffff, linewidth = 1, ...props }, ref) => (
+    <lineShaderMaterial
+      ref={ref}
+      {...props}
+      uniforms={{
+        maxDistance: { value: maxDistance },
+        uCameraPosition: { value: uCameraPosition },
+        color: { value: color },
+        linewidth: { value: linewidth }
+      }}
+    />
+  )
 );
-
-const checkShaderErrors = (shader: WebGLShader, gl: WebGLRenderingContext) => {
-  const info = gl.getShaderInfoLog(shader);
-  if (info) {
-    console.error('Shader compilation error:', info);
-  }
-};

@@ -1,15 +1,16 @@
-// src/components/PointCloud.tsx
+// src/3d/PointCloud.tsx
 
 import React, { useMemo, useRef, useEffect } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { PointMaterial, LineMaterial, LineShaderMaterialType, PointShaderMaterialType } from "./Shaders";
+import { PointMaterial, LineMaterial } from "./Shaders";
 import {
   generateHeartShape,
   generateSmileyShape,
   generateSaturnShape,
 } from "./Shapes";
 import { kdTree } from "kd-tree-javascript";
+import { useAudioContext } from "../context/AudioContext";
 
 interface PointCloudProps {
   shape: "heart" | "smiley" | "saturn";
@@ -20,171 +21,222 @@ interface PointCloudProps {
 export const PointCloud: React.FC<PointCloudProps> = ({
   shape,
   pointCount = 1000,
-  scale = 1,
+  scale = 8,
 }) => {
-  const positionsRef = useRef<THREE.BufferAttribute>(null);
-  const lineGeometryRef = useRef<THREE.LineSegments>(null);
-  const lineMaterialRef = useRef<LineShaderMaterialType>(null);
+  const positionsRef = useRef<THREE.BufferAttribute | null>(null);
+  const lineGeometryRef = useRef<THREE.BufferGeometry | null>(null);
+  const lineMaterialRef = useRef<THREE.ShaderMaterial | null>(null);
+  const pointMaterialRef = useRef<THREE.ShaderMaterial | null>(null);
   const prevShape = useRef<string>(shape);
   const progressRef = useRef(0);
-  const pointMaterialRef = useRef<PointShaderMaterialType>(null);
   const previousPositions = useRef<Float32Array>(new Float32Array());
-
+  const homePositions = useRef<THREE.Vector3[]>([]);
   const { camera } = useThree();
 
-  // Function to generate line positions based on KD-Tree
-  const generateLinePositions = (
-    positions: Float32Array,
-    k: number
-  ): Float32Array => {
-    const posArray: number[] = [];
-    const numPoints = positions.length / 3;
+  const { amplitude } = useAudioContext();
 
-    // Convert positions to point objects
-    const points = [];
-    for (let i = 0; i < numPoints; i++) {
-      points.push({
-        x: positions[i * 3],
-        y: positions[i * 3 + 1],
-        z: positions[i * 3 + 2],
-        index: i,
-      });
-    }
+  // Define variables for displacement (modifiable for tweaking)
+  const displacementScale = useRef(1.0); // Base scale for displacement
+  const scatterProbability = useRef(0.3); // Base probability for scatter
+  const scatterScale = useRef(0.2); // Scale factor for scatter displacement
+  const nonLinearExponent = useRef(1.5); // Exponent for non-linear scaling
 
-    // Define distance function
-    function distance(a: any, b: any) {
-      const dx = a.x - b.x;
-      const dy = a.y - b.y;
-      const dz = a.z - b.z;
-      return dx * dx + dy * dy + dz * dz;
-    }
-
-    // Build KD-Tree
-    const tree = new kdTree(points, distance, ["x", "y", "z"]);
-
-    // For each point, find the K nearest neighbors
-    for (let i = 0; i < numPoints; i++) {
-      const point = points[i];
-      const neighbors = tree.nearest(point, k + 1); // +1 because the nearest neighbor is the point itself
-
-      // Connect lines to the K nearest neighbors
-      for (const neighbor of neighbors) {
-        const neighborPoint = neighbor[0];
-        if (neighborPoint.index !== point.index) {
-          posArray.push(
-            point.x,
-            point.y,
-            point.z,
-            neighborPoint.x,
-            neighborPoint.y,
-            neighborPoint.z
-          );
-        }
-      }
-    }
-
-    return new Float32Array(posArray);
-  };
-
-  // Initialize positionsArray and linePositions
-  const [positionsArray, setPositionsArray] = React.useState<Float32Array>(
-    new Float32Array()
-  );
-  const [linePositions, setLinePositions] = React.useState<Float32Array>(
-    new Float32Array()
-  );
-
-  useEffect(() => {
-    // Generate initial positions based on shape
-    let currentPositions: Float32Array;
+  // Generate initial shape
+  const initialShape = useMemo(() => {
+    let positions: Float32Array;
     switch (shape) {
       case "heart":
-        currentPositions = generateHeartShape(pointCount);
+        positions = generateHeartShape(pointCount);
         break;
       case "smiley":
-        currentPositions = generateSmileyShape(pointCount);
+        positions = generateSmileyShape(pointCount);
         break;
       case "saturn":
-        currentPositions = generateSaturnShape(pointCount);
-        break;
       default:
-        currentPositions = new Float32Array(pointCount * 3);
+        positions = generateSaturnShape(pointCount);
+        break;
     }
+    
+    // Apply scale directly to the initial positions
+    const scaledPositions = new Float32Array(positions.length);
+    for (let i = 0; i < positions.length; i++) {
+      scaledPositions[i] = positions[i] * scale;
+    }
+    return scaledPositions;
+  }, [shape, pointCount, scale]);
 
-    setPositionsArray(currentPositions);
-    setLinePositions(generateLinePositions(currentPositions, 5)); // Example: k=5
-    previousPositions.current = currentPositions.slice();
-    prevShape.current = shape;
-    progressRef.current = 0;
-  }, [shape, pointCount]);
-
+  // Initialize home positions and buffer attributes
   useEffect(() => {
-    if (lineGeometryRef.current && linePositions.length > 0) {
-      const positionAttribute = new THREE.BufferAttribute(linePositions, 3);
-      lineGeometryRef.current.geometry.setAttribute("position", positionAttribute);
-    }
-  }, [linePositions]);
-
-  // Update uniforms and positions during animation
-  useFrame((state, delta) => {
-    const positions = positionsRef.current?.array as Float32Array;
-
-    // Update uCameraPosition uniform in LineMaterial
-    if (lineMaterialRef.current) {
-      (lineMaterialRef.current as any).uniforms.uCameraPosition.value.copy(
-        camera.position
+    homePositions.current = [];
+    for (let i = 0; i < initialShape.length; i += 3) {
+      homePositions.current.push(
+        new THREE.Vector3(
+          initialShape[i],
+          initialShape[i + 1],
+          initialShape[i + 2]
+        )
       );
     }
 
-    // Update uTime uniform in PointMaterial
-    if (pointMaterialRef.current) {
-      (pointMaterialRef.current as any).uniforms.uTime.value += delta;
+    // Set positions in buffer
+    if (!positionsRef.current) {
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute(
+        "position",
+        new THREE.BufferAttribute(initialShape, 3).setUsage(
+          THREE.DynamicDrawUsage
+        )
+      );
+      positionsRef.current = geometry.getAttribute("position") as THREE.BufferAttribute;
+    } else {
+      positionsRef.current.array = initialShape;
+      positionsRef.current.needsUpdate = true;
+    }
+  }, [initialShape]);
+
+  // Generate line positions based on KD-Tree
+  useEffect(() => {
+    if (!positionsRef.current) return;
+
+    const generateLinePositions = (positionsArray: Float32Array, K: number): Float32Array => {
+      const points = [];
+      for (let i = 0; i < positionsArray.length; i += 3) {
+        points.push({
+          x: positionsArray[i],
+          y: positionsArray[i + 1],
+          z: positionsArray[i + 2],
+        });
+      }
+
+      const distance = (a: any, b: any) => {
+        return Math.sqrt(
+          (a.x - b.x) ** 2 +
+          (a.y - b.y) ** 2 +
+          (a.z - b.z) ** 2
+        );
+      };
+
+      const tree = new kdTree(points, distance, ["x", "y", "z"]);
+
+      const posArray: number[] = [];
+      points.forEach((point, index) => {
+        const nearest = tree.nearest(point, K + 1);
+        nearest.forEach((neighbor: any[]) => {
+          if (neighbor[0] !== point) {
+            posArray.push(point.x, point.y, point.z);
+            posArray.push(neighbor[0].x, neighbor[0].y, neighbor[0].z);
+          }
+        });
+      });
+
+      return new Float32Array(posArray);
+    };
+
+    const linePositions = generateLinePositions(
+      positionsRef.current.array as Float32Array,
+      6
+    ); // K=6 nearest neighbors
+
+    if (!lineGeometryRef.current) {
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute(
+        "position",
+        new THREE.BufferAttribute(linePositions, 3).setUsage(
+          THREE.DynamicDrawUsage
+        )
+      );
+      lineGeometryRef.current = geometry;
+    } else {
+      lineGeometryRef.current.setAttribute(
+        "position",
+        new THREE.BufferAttribute(linePositions, 3).setUsage(
+          THREE.DynamicDrawUsage
+        )
+      );
+    }
+  }, []);
+
+  // Animation frame update
+  useFrame((state, delta) => {
+    if (!positionsRef.current) return;
+
+    // Debug log to verify amplitude is being received
+    console.log("PointCloud receiving amplitude:", amplitude);
+
+    const positions = positionsRef.current.array as Float32Array;
+
+    // Reduce the displacement effects
+    const scaledAmplitude = Math.pow(amplitude * 2, nonLinearExponent.current) * displacementScale.current;
+    const dynamicScatterProbability = scatterProbability.current * (1 + amplitude);
+    
+    // Apply audio-reactive displacement to each point
+    for (let i = 0; i < positions.length; i += 3) {
+      const home = homePositions.current[i / 3];
+      
+      const shouldScatter = Math.random() < dynamicScatterProbability;
+      
+      if (shouldScatter) {
+        // Generate random displacement direction with increased range
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.random() * Math.PI;
+        const r = scaledAmplitude * scatterScale.current * 3; // Increased scatter range
+        
+        // Convert spherical to Cartesian coordinates with more dramatic movement
+        positions[i] = home.x + r * Math.sin(phi) * Math.cos(theta);
+        positions[i + 1] = home.y + r * Math.sin(phi) * Math.sin(theta);
+        positions[i + 2] = home.z + r * Math.cos(phi);
+      } else {
+        // Radial displacement from home position with pulsing effect
+        const pulseFreq = 2.0; // Adjust for faster/slower pulsing
+        const time = state.clock.elapsedTime;
+        const pulseFactor = 1 + Math.sin(time * pulseFreq) * 0.2; // Subtle pulsing
+        
+        const dir = home.clone().normalize();
+        const displacement = dir.multiplyScalar(scaledAmplitude * pulseFactor);
+        
+        positions[i] = home.x + displacement.x;
+        positions[i + 1] = home.y + displacement.y;
+        positions[i + 2] = home.z + displacement.z;
+      }
     }
 
-    if (prevShape.current !== shape) {
-      progressRef.current += delta;
-      const progress = Math.min(progressRef.current / 1.0, 1); // Animation duration is 1 second
+    positionsRef.current.needsUpdate = true;
 
-      for (let i = 0; i < positions.length; i++) {
-        positions[i] =
-          previousPositions.current[i] +
-          (positionsArray[i] - previousPositions.current[i]) * progress;
-      }
-
-      positionsRef.current!.needsUpdate = true;
-
-      if (progress >= 1) {
-        prevShape.current = shape;
-        progressRef.current = 0;
-        previousPositions.current = positionsArray.slice();
-      }
+    // Update line positions if needed
+    if (lineGeometryRef.current) {
+      const linePositions = lineGeometryRef.current.getAttribute("position") as THREE.BufferAttribute;
+      linePositions.needsUpdate = true;
     }
   });
 
   return (
-    <group scale={[scale, scale, scale]}>
-      {/* Points */}
+    <group>
       <points>
         <bufferGeometry>
           <bufferAttribute
             ref={positionsRef}
             attach="attributes-position"
-            count={positionsArray.length / 3}
-            array={positionsArray}
+            count={initialShape.length / 3}
+            array={initialShape}
             itemSize={3}
           />
         </bufferGeometry>
-        <PointMaterial ref={pointMaterialRef} />
+        <pointsMaterial
+          size={0.05}
+          sizeAttenuation={true}
+          transparent={true}
+          opacity={0.8}
+          color="#00ff44"
+
+        />
       </points>
 
-      {/* Glowing Lines */}
-      <lineSegments ref={lineGeometryRef}>
-        <bufferGeometry />
-        <LineMaterial
-          ref={lineMaterialRef}
-          color={0x39FF14}
-          linewidth={2}
-          maxDistance={100.0}
+      <lineSegments>
+        <bufferGeometry ref={lineGeometryRef} />
+        <lineBasicMaterial 
+          color="#00ff44"
+          transparent 
+          opacity={0.3} 
         />
       </lineSegments>
     </group>
