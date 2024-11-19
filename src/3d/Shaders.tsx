@@ -66,19 +66,30 @@ export const LineShaderMaterial = shaderMaterial(
     uniform float maxDistance;
     uniform float uTime;
     uniform float uAmplitude;
+    
     varying float vDistance;
+    varying vec3 vPosition;
+    varying float vAmplitude;
 
     void main() {
       vec3 pos = position;
-
-      // Calculate displacement
-      float displacement = uAmplitude * 2.0 + 0.2 * sin(uTime * 2.0 + length(pos));
-
-      // Displace the vertex radially
-      pos += normalize(pos) * displacement;
-
+      
+      // Pass amplitude directly to fragment shader
+      vAmplitude = uAmplitude;
+      
+      // Calculate radial displacement
+      float displacement = uAmplitude * 0.5 * (1.0 + sin(uTime * 2.0 + length(pos)));
+      vec3 normal = normalize(pos);
+      pos += normal * displacement;
+      
+      // Add wave effect
+      float wave = sin(length(pos) * 0.5 + uTime * 2.0) * uAmplitude * 0.2;
+      pos += normal * wave;
+      
+      // Calculate world position and distance
       vec4 worldPosition = modelMatrix * vec4(pos, 1.0);
       vDistance = distance(worldPosition.xyz, uCameraPosition);
+      vPosition = pos;
 
       gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
     }
@@ -89,15 +100,32 @@ export const LineShaderMaterial = shaderMaterial(
     
     uniform float maxDistance;
     uniform vec3 color;
+    uniform float uTime;
     uniform float uAmplitude;
+    
     varying float vDistance;
+    varying vec3 vPosition;
+    varying float vAmplitude;
 
     void main() {
       float attenuation = 1.0 - clamp(vDistance / maxDistance, 0.0, 1.0);
-
-      // Adjust color intensity based on amplitude
-      vec3 finalColor = color * (0.5 + 0.5 * uAmplitude);
-
+      
+      // Base color with audio-reactive intensity
+      vec3 baseColor = color * (0.5 + 0.5 * vAmplitude);
+      
+      // Add subtle color variation based on position and time
+      float colorMod = sin(length(vPosition) * 0.2 + uTime * 0.5) * 0.2;
+      vec3 finalColor = baseColor + vec3(colorMod, colorMod * 0.5, colorMod * 0.2);
+      
+      // Add glow effect based on amplitude
+      float glow = 0.2 * vAmplitude * (1.0 + sin(uTime * 2.0));
+      finalColor += vec3(0.1, 0.3, 0.1) * glow;
+      
+      // Enhance brightness during high amplitude
+      float brightness = 1.0 + vAmplitude * 0.5;
+      finalColor *= brightness;
+      
+      // Apply distance attenuation
       gl_FragColor = vec4(finalColor * attenuation, 1.0);
     }
   `

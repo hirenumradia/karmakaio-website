@@ -160,9 +160,6 @@ export const PointCloud: React.FC<PointCloudProps> = ({
   useFrame((state, delta) => {
     if (!positionsRef.current) return;
 
-    // Debug log to verify amplitude is being received
-    console.log("PointCloud receiving amplitude:", amplitude);
-
     const positions = positionsRef.current.array as Float32Array;
 
     // Reduce the displacement effects
@@ -187,9 +184,9 @@ export const PointCloud: React.FC<PointCloudProps> = ({
         positions[i + 2] = home.z + r * Math.cos(phi);
       } else {
         // Radial displacement from home position with pulsing effect
-        const pulseFreq = 2.0; // Adjust for faster/slower pulsing
+        const pulseFreq = 2.0;
         const time = state.clock.elapsedTime;
-        const pulseFactor = 1 + Math.sin(time * pulseFreq) * 0.2; // Subtle pulsing
+        const pulseFactor = 1 + Math.sin(time * pulseFreq) * 0.2;
         
         const dir = home.clone().normalize();
         const displacement = dir.multiplyScalar(scaledAmplitude * pulseFactor);
@@ -200,19 +197,18 @@ export const PointCloud: React.FC<PointCloudProps> = ({
       }
     }
 
-    positionsRef.current.needsUpdate = true;
 
-    // Update line positions if needed
-    if (lineGeometryRef.current) {
-      const linePositions = lineGeometryRef.current.getAttribute("position") as THREE.BufferAttribute;
-      linePositions.needsUpdate = true;
-    }
-
-    // Update the LineMaterial uniforms
-    if (lineMaterialRef.current) {
+    // Update materials
+    if (lineMaterialRef.current?.uniforms) {
       lineMaterialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
       lineMaterialRef.current.uniforms.uAmplitude.value = amplitude;
     }
+
+    if (pointMaterialRef.current?.uniforms) {
+      pointMaterialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
+    }
+
+    positionsRef.current.needsUpdate = true;
   });
 
   return (
@@ -225,25 +221,28 @@ export const PointCloud: React.FC<PointCloudProps> = ({
             count={initialShape.length / 3}
             array={initialShape}
             itemSize={3}
+            usage={THREE.DynamicDrawUsage}
           />
         </bufferGeometry>
         <PointMaterial
-          uTime={amplitude}
+          ref={pointMaterialRef}
+          uTime={clock.getElapsedTime()}
         />
       </points>
 
-      <lineSegments>
-        <bufferGeometry ref={lineGeometryRef} />
-        <LineMaterial
-          ref={lineMaterialRef}
-          color={0x00ff44}
-          maxDistance={100}
-          uCameraPosition={new Float32Array(camera.position.toArray())}
-          linewidth={1}
-          uTime={clock.elapsedTime}  // Pass time uniform
-          uAmplitude={amplitude}     // Pass amplitude uniform
-        />
-      </lineSegments>
+      {lineGeometryRef.current && (
+        <lineSegments geometry={lineGeometryRef.current}>
+          <LineMaterial
+            ref={lineMaterialRef}
+            color={0x00ff44}
+            maxDistance={100}
+            linewidth={1}
+            uTime={clock.getElapsedTime()}
+            uAmplitude={amplitude}
+            uCameraPosition={new Float32Array(camera.position.toArray())}
+          />
+        </lineSegments>
+      )}
     </group>
   );
 };
