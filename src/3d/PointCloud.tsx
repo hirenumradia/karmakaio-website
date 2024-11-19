@@ -31,7 +31,7 @@ export const PointCloud: React.FC<PointCloudProps> = ({
   const progressRef = useRef(0);
   const previousPositions = useRef<Float32Array>(new Float32Array());
   const homePositions = useRef<THREE.Vector3[]>([]);
-  const { camera } = useThree();
+  const { camera, clock } = useThree();
 
   const { amplitude } = useAudioContext();
 
@@ -207,6 +207,12 @@ export const PointCloud: React.FC<PointCloudProps> = ({
       const linePositions = lineGeometryRef.current.getAttribute("position") as THREE.BufferAttribute;
       linePositions.needsUpdate = true;
     }
+
+    // Update the LineMaterial uniforms
+    if (lineMaterialRef.current) {
+      lineMaterialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
+      lineMaterialRef.current.uniforms.uAmplitude.value = amplitude;
+    }
   });
 
   return (
@@ -229,10 +235,13 @@ export const PointCloud: React.FC<PointCloudProps> = ({
       <lineSegments>
         <bufferGeometry ref={lineGeometryRef} />
         <LineMaterial
+          ref={lineMaterialRef}
           color={0x00ff44}
           maxDistance={100}
           uCameraPosition={new Float32Array(camera.position.toArray())}
           linewidth={1}
+          uTime={clock.elapsedTime}  // Pass time uniform
+          uAmplitude={amplitude}     // Pass amplitude uniform
         />
       </lineSegments>
     </group>

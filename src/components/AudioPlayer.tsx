@@ -351,7 +351,7 @@ const AudioPlayer: React.FC = () => {
         </button>
       </div>
 
-      <div className="volume-control">
+      {/* <div className="volume-control">
         <label htmlFor="volume">Volume:</label>
         <input
           id="volume"
@@ -362,7 +362,7 @@ const AudioPlayer: React.FC = () => {
           value={volume}
           onChange={handleVolumeChange}
         />
-      </div>
+      </div> */}
 
       <div className="song-info">
         <p className="audio-filename">{filename}</p>
