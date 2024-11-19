@@ -222,6 +222,9 @@ const AudioPlayer: React.FC = () => {
     if (isPlaying) {
       audioRef.current.pause();
       isPlayingRef.current = false;
+      // Reset amplitude to 0 when pausing
+      setAmplitudeRef.current(0);
+      
       if (audioContextRef.current && audioContextRef.current.state === 'running') {
         audioContextRef.current.suspend().then(() => {
           console.log("AudioContext suspended.");
@@ -255,7 +258,7 @@ const AudioPlayer: React.FC = () => {
               console.log("Initializing AnalyserNode.");
               analyserNodeRef.current = audioContextRef.current.createAnalyser();
               analyserNodeRef.current.fftSize = 512;
-              analyserNodeRef.current.smoothingTimeConstant = 0.3;
+              analyserNodeRef.current.smoothingTimeConstant = 0.6;
               analyserNodeRef.current.minDecibels = -90;
               analyserNodeRef.current.maxDecibels = -10;
 

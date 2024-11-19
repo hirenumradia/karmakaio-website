@@ -221,22 +221,18 @@ export const PointCloud: React.FC<PointCloudProps> = ({
             itemSize={3}
           />
         </bufferGeometry>
-        <pointsMaterial
-          size={0.05}
-          sizeAttenuation={true}
-          transparent={true}
-          opacity={0.8}
-          color="#00ff44"
-
+        <PointMaterial
+          uTime={amplitude}
         />
       </points>
 
       <lineSegments>
         <bufferGeometry ref={lineGeometryRef} />
-        <lineBasicMaterial 
-          color="#00ff44"
-          transparent 
-          opacity={0.3} 
+        <LineMaterial
+          color={0x00ff44}
+          maxDistance={100}
+          uCameraPosition={new Float32Array(camera.position.toArray())}
+          linewidth={1}
         />
       </lineSegments>
     </group>

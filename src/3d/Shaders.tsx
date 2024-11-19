@@ -11,7 +11,7 @@ interface PointUniforms {
 
 interface LineUniforms {
   maxDistance: number;
-  uCameraPosition: Vector3;
+  uCameraPosition: Float32Array;
   color: ColorRepresentation;
   linewidth: number;
 }
@@ -49,10 +49,10 @@ export const PointShaderMaterial = shaderMaterial(
 
 export const LineShaderMaterial = shaderMaterial(
   {
-    maxDistance: 100.0 as number,
-    uCameraPosition: new Vector3(),
+    maxDistance: 100.0,
+    uCameraPosition: new Float32Array([0, 0, 0]),
     color: new Color(0xff0000),
-    linewidth: 1.0 as number,
+    linewidth: 1.0,
   },
   // Vertex Shader
   `
@@ -95,7 +95,7 @@ declare module '@react-three/fiber' {
     lineShaderMaterial: JSX.IntrinsicElements['shaderMaterial'] & {
       uniforms: {
         maxDistance: { value: number };
-        uCameraPosition: { value: Vector3 };
+        uCameraPosition: { value: Float32Array };
         color: { value: ColorRepresentation };
         linewidth: { value: number };
       };
@@ -114,7 +114,7 @@ interface PointMaterialProps {
 
 interface LineMaterialProps {
   maxDistance?: number;
-  uCameraPosition?: Vector3;
+  uCameraPosition?: Float32Array;
   color?: ColorRepresentation;
   linewidth?: number;
 }
@@ -133,16 +133,22 @@ export const PointMaterial = React.forwardRef<PointShaderMaterialType, PointMate
 );
 
 export const LineMaterial = React.forwardRef<LineShaderMaterialType, LineMaterialProps>(
-  ({ maxDistance = 100, uCameraPosition = new Vector3(), color = 0xffffff, linewidth = 1, ...props }, ref) => (
-    <lineShaderMaterial
-      ref={ref}
-      {...props}
-      uniforms={{
-        maxDistance: { value: maxDistance },
-        uCameraPosition: { value: uCameraPosition },
-        color: { value: color },
-        linewidth: { value: linewidth }
-      }}
-    />
-  )
+  ({ maxDistance = 100, uCameraPosition = new Float32Array([0, 0, 0]), color = 0xffffff, linewidth = 1, ...props }, ref) => {
+    const cameraPosition = new Float32Array(
+      Array.isArray(uCameraPosition) ? uCameraPosition : [0, 0, 0]
+    );
+
+    return (
+      <lineShaderMaterial
+        ref={ref}
+        {...props}
+        uniforms={{
+          maxDistance: { value: maxDistance },
+          uCameraPosition: { value: cameraPosition },
+          color: { value: new Color(color) },
+          linewidth: { value: linewidth }
+        }}
+      />
+    );
+  }
 );
