@@ -13,6 +13,7 @@ import { kdTree } from "kd-tree-javascript";
 import { useAudioContext } from "../context/AudioContext";
 import { ShaderDebugger } from "./ShaderDebugger";
 import { useShaderDebugControls } from "./DebugControls";
+import { updateNormalizedMix } from "../utils/3d";
 
 interface PointCloudProps {
   shape: "heart" | "smiley" | "saturn";
@@ -34,9 +35,11 @@ export const PointCloud: React.FC<PointCloudProps> = ({
   const previousPositions = useRef<Float32Array>(new Float32Array());
   const homePositions = useRef<THREE.Vector3[]>([]);
   const lastLogTime = useRef(0);
+  const previousNormalizedMixRef = useRef(0); // Stores the previous normalized mix value for the fade-out effect
+  const fadeOutFactor = 0.05; // Adjust this value to control the fade-out speed
   const { camera, clock } = useThree();
 
-  const { amplitude, frequencies } = useAudioContext();
+  const { amplitude, isPlaying, isPlayingTransitionedTo } = useAudioContext();
   const debugControls = useShaderDebugControls();
 
   // Define variables for displacement (modifiable for tweaking)
@@ -52,6 +55,9 @@ export const PointCloud: React.FC<PointCloudProps> = ({
   const currentPositions = useRef<Float32Array>(new Float32Array());
   const targetPositions = useRef<Float32Array>(new Float32Array());
   const interpolationSpeed = useRef(0.15); // Adjust this value to control smoothness (0.1-0.3 range)
+
+  // State to manage currentNormalizedAmp
+  const currentNormalizedAmpRef = useRef(0.0);
 
   // Generate initial shape
   const initialShape = useMemo(() => {
@@ -169,9 +175,6 @@ export const PointCloud: React.FC<PointCloudProps> = ({
     }
   }, [initialShape]);
 
-  // Use ref instead of state
-  const dominantFreqRef = useRef(0);
-
   // Animation frame update
   useFrame((state, delta) => {
     if (!positionsRef.current || !lineGeometryRef.current) return;
@@ -239,59 +242,14 @@ export const PointCloud: React.FC<PointCloudProps> = ({
 
     // Update material uniforms directly in useFrame
     if (lineMaterialRef.current?.uniforms) {
-      const material = lineMaterialRef.current;
-      
-      // Calculate frequencies once per frame
-      const frequenciesArray = Array.from(frequencies || new Uint8Array(256));
-      const maxFreq = Math.max(...frequenciesArray);
-      
-      const normalizedFrequencies = frequenciesArray.map(f => {
-        const normalized = f / 255.0;
-        const boosted = Math.pow(normalized, 0.5);
-        return Math.min(boosted * 3.0, 1.0);
-      });
-      
-      const newDominantFreq = normalizedFrequencies
-        .slice(0, 40)
-        .reduce((sum, val) => sum + val, 0) / 40;
-      
-      const scaledDominantFreq = Math.min(newDominantFreq * 3.0, 1.0);
-      
-      // Update all uniforms in one place
-      material.uniforms.uDominantFrequency.value = scaledDominantFreq;
-      material.uniforms.uAmplitude.value = amplitude || 0.0;
-      material.uniforms.uTime.value = state.clock.elapsedTime;
-      material.uniforms.uCameraPosition.value = new Float32Array(camera.position.toArray());
-      
-      // Optional debug logging
-      if (debugControls.showDebug && Date.now() - lastLogTime.current > 1000) {
-        console.log('Audio Analysis:', {
-          rawMax: maxFreq,
-          normalizedMax: Math.max(...normalizedFrequencies),
-          finalFreq: scaledDominantFreq,
-          range: scaledDominantFreq < 0.33 ? 'LOW' : 
-                 scaledDominantFreq < 0.66 ? 'MID' : 'HIGH'
-        });
-        lastLogTime.current = Date.now();
-      }
+      const currentAmp = amplitude * 3; // Normalize as needed
+      currentNormalizedAmpRef.current = currentAmp;
+
+      lineMaterialRef.current.uniforms.uAmplitude.value = currentAmp;
+      lineMaterialRef.current.uniforms.uTime.value = state.clock.getElapsedTime();
     }
-
-    // Update positions ref
-    positionsRef.current.needsUpdate = true;
+      
   });
-
-  // Helper function to calculate mix ratio
-  const calculateMixRatio = (freq: number): number => {
-    if (freq < 0.33) return freq / 0.33;
-    if (freq < 0.66) return (freq - 0.33) / 0.33;
-    return (freq - 0.66) / 0.34;
-  };
-
-  const getFrequencyRange = (freq: number): string => {
-    if (freq < 0.33) return "LOW (should be green->cyan)";
-    if (freq < 0.66) return "MID (should be cyan->pink)";
-    return "HIGH (should be pink->white)";
-  };
 
   // Add error handling for shader compilation
   useEffect(() => {
@@ -329,14 +287,11 @@ export const PointCloud: React.FC<PointCloudProps> = ({
             ref={lineMaterialRef}
             maxDistance={100}
             linewidth={1}
-            uTime={clock.getElapsedTime()}
-            uAmplitude={amplitude}
-            uDominantFrequency={dominantFreqRef.current}
             uCameraPosition={new Float32Array(camera.position.toArray())}
           />
         </lineSegments>
       )}
-      <ShaderDebugger material={lineMaterialRef} />
+      {/* <ShaderDebugger material={lineMaterialRef} /> */}
     </group>
   );
 };

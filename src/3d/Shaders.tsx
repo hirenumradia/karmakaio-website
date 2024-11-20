@@ -17,7 +17,6 @@ interface LineUniforms {
   linewidth: number;
   uTime: number;
   uAmplitude: number;
-  uDominantFrequency: number;
 }
 
 // 2. Create Shader Materials Using `shaderMaterial` with Correct Uniform Definitions
@@ -58,18 +57,17 @@ export const LineShaderMaterial = shaderMaterial(
     linewidth: 1.0,
     uTime: 0.0,
     uAmplitude: 0.0,
-    uDominantFrequency: 0.0,
   },
   // Vertex Shader
   `
+    precision highp float; // Define high precision for floats
+
     // Uniforms
     uniform float uTime;
     uniform float uAmplitude;
-    uniform float uDominantFrequency;
     uniform vec3 uCameraPosition;
 
     // Varyings
-    varying float vDominantFrequency;
     varying float vAmplitude;
     varying vec3 vNormal;
     varying vec3 vPosition;
@@ -162,7 +160,6 @@ export const LineShaderMaterial = shaderMaterial(
         vec3 pos = position;
         vAmplitude = uAmplitude;
         vNormal = normalize(pos);
-        vDominantFrequency = uDominantFrequency;
         
         // Enhanced audio-reactive movement
         float noiseTime = uTime * 0.3;
@@ -180,14 +177,12 @@ export const LineShaderMaterial = shaderMaterial(
         
         float baseDisplacement = smoothAmplitude * (0.5 + 0.5 * noise);
         float waveDisplacement = radialWave * smoothAmplitude * 0.4;
-        float freqDisplacement = uDominantFrequency * smoothAmplitude * 0.3;
         
         float falloff = exp(-radialDistance * 0.08);
         
         vec3 displacement = vNormal * (
             baseDisplacement * falloff +
             waveDisplacement +
-            freqDisplacement +
             noise * smoothAmplitude * 0.3
         );
         
@@ -203,33 +198,35 @@ export const LineShaderMaterial = shaderMaterial(
   `,
   // Fragment Shader
   `
+  // Fragment Shader
+  
+    #ifdef GL_FRAGMENT_PRECISION_HIGH
+    precision highp float;
+    #else
     precision mediump float;
+    #endif
     
-    varying float vDominantFrequency;
-    varying float vAmplitude;
+    uniform float uAmplitude;
 
     void main() {
+
       // Define colors
       vec3 lowColor = vec3(0.0, 1.0, 0.4);    // Bright green
       vec3 midColor = vec3(0.0, 0.8, 1.0);    // Cyan
       vec3 highColor = vec3(1.0, 0.0, 0.8);   // Pink
       vec3 peakColor = vec3(1.0, 1.0, 1.0);   // White
 
-      // Determine color based on frequency
+      // Determine color based on amplitude
       vec3 finalColor;
-      float freq = clamp(vDominantFrequency, 0.0, 1.0);
+      float amp = clamp(uAmplitude, 0.0, 1.0);
 
-      if(freq < 0.33) {
-          finalColor = mix(lowColor, midColor, freq / 0.33);
-      } else if(freq < 0.66) {
-          finalColor = mix(midColor, highColor, (freq - 0.33) / 0.33);
+      if(amp  < 0.33) {
+          finalColor = mix(lowColor, midColor, amp  / 0.33);
+      } else if(amp  < 0.66) {
+          finalColor = mix(midColor, highColor, (amp  - 0.33) / 0.33);
       } else {
-          finalColor = mix(highColor, peakColor, (freq - 0.66) / 0.34);
+          finalColor = mix(highColor, peakColor, (amp  - 0.66) / 0.34);
       }
-
-      // Add glow based on amplitude
-      float glow = 1.0 + (vAmplitude * 0.5);
-      finalColor *= glow;
 
       // Output final color
       gl_FragColor = vec4(finalColor, 1.0);
@@ -244,19 +241,12 @@ extend({ PointShaderMaterial, LineShaderMaterial });
 declare module '@react-three/fiber' {
   interface ThreeElements {
     pointShaderMaterial: JSX.IntrinsicElements['shaderMaterial'] & {
-      uniforms: {
-        uTime: { value: number };
-      };
+      uTime?: number;
     };
     lineShaderMaterial: JSX.IntrinsicElements['shaderMaterial'] & {
-      uniforms: {
-        maxDistance: { value: number };
-        uCameraPosition: { value: Float32Array };
-        linewidth: { value: number };
-        uTime: { value: number };
-        uAmplitude: { value: number };
-        uDominantFrequency: { value: number };
-      };
+      maxDistance?: number;
+      uCameraPosition?: Float32Array;
+      linewidth?: number;
     };
   }
 }
@@ -273,22 +263,13 @@ interface PointMaterialProps {
 interface LineMaterialProps {
   maxDistance?: number;
   uCameraPosition?: Float32Array;
-  linewidth?: number;
-  uTime?: number;
-  uAmplitude?: number;
-  uDominantFrequency?: number;
+  linewidth?: number; 
 }
 
 // 7. Create React Components with Forwarded Refs and Correct Typing
 export const PointMaterial = React.forwardRef<PointShaderMaterialType, PointMaterialProps>(
   ({ uTime = 0, ...props }, ref) => (
-    <pointShaderMaterial
-      ref={ref}
-      {...props}
-      uniforms={{
-        uTime: { value: uTime }
-      }}
-    />
+    <pointShaderMaterial ref={ref} uTime={uTime} {...props} />
   )
 );
 
@@ -297,26 +278,19 @@ export const LineMaterial = React.forwardRef<LineShaderMaterialType, LineMateria
     {
       maxDistance = 100,
       uCameraPosition = new Float32Array([0, 0, 0]),
-      linewidth = 1,
-      uTime = 0.0,
-      uAmplitude = 0.0,
-      uDominantFrequency = 0.0,
+      linewidth = 1
+
     }, 
     ref
   ) => {
     return (
       <lineShaderMaterial
         ref={ref}
-        uniforms={{
-          maxDistance: { value: maxDistance },
-          uCameraPosition: { value: uCameraPosition },
-          linewidth: { value: linewidth },
-          uTime: { value: uTime },
-          uAmplitude: { value: uAmplitude },
-          uDominantFrequency: { value: uDominantFrequency },
-        }}
+        maxDistance={maxDistance}
+        uCameraPosition={uCameraPosition}
+        linewidth={linewidth}
         needsUpdate={true}
-      />
+    />
     );
   }
 );

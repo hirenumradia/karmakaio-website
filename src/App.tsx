@@ -131,8 +131,8 @@ const App: React.FC = () => {
             spiralTightness={spiralTightness}
             chaosAmount={chaosAmount} 
           />
-          <PointCloudTest />
-          {/* <PointCloud shape={shape} pointCount={500} scale={5} /> */}
+          {/* <PointCloudTest /> */}
+          <PointCloud shape={shape} pointCount={500} scale={5} />
           <KarmaHeading />
           <EffectComposer>
             <Bloom
