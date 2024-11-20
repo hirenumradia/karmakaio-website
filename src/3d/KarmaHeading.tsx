@@ -74,7 +74,7 @@ const KarmaHeading: React.FC = () => {
     materialRef.current = textMaterial;
     
     const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-    textMesh.position.set(0, 0, 5);
+    textMesh.position.set(0, 0, 0);
     textMeshRef.current = textMesh;
     scene.add(textMesh);
 

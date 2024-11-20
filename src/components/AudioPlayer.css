@@ -13,6 +13,7 @@
     
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 15px;
     
     /* Box Shadow for Depth */
@@ -68,10 +69,12 @@
 .audio-filename {
     color: #ffffff;
     font-size: 16px;
+    margin: 0;
+    padding: 0;
     flex-grow: 1; /* Allows the text to take up available space */
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow: visible;
+    text-overflow: visible;
     min-width: 0; /* Prevents overflow issues */
 }
   
@@ -104,5 +107,36 @@
     .audio-filename {
         width: 100%;
         text-align: center;
+    }
+}
+
+/* Marquee Container */
+.marquee-container {
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+  
+/* Marquee Animation */
+.marquee-text {
+    display: inline-block;
+    padding-right: 50px; /* Add space between repetitions */
+    animation: marquee 20s linear infinite;
+    /* Create a second copy of the text */
+    &::after {
+        content: attr(data-text);
+        padding-left: 50px; /* Match padding-right */
+    }
+}
+  
+@keyframes marquee {
+    0% {
+        transform: translateX(100%);
+    }
+    100% {
+        transform: translateX(-150%);
     }
 }

@@ -356,8 +356,8 @@ const AudioPlayer: React.FC = () => {
         />
       </div> */}
 
-      <div className="song-info">
-        <p className="audio-filename">{filename}</p>
+      <div className="song-info marquee-container">
+        <p className="audio-filename marquee-text">{currentSong.title}</p>
       </div>
     </div>
   );
