@@ -7,9 +7,9 @@ import { ReactThreeFiber } from "@react-three/fiber";
 // Define the ColorShaderMaterial using shaderMaterial
 const ColorShaderMaterial = shaderMaterial(
   {
-    uTime: 0,
-    colorA: new THREE.Color(0xff0000),
-    colorB: new THREE.Color(0x0000ff),
+    uMixValue: 0, // Uniform to control color mixing based on bass
+    colorA: new THREE.Color(0x0000ff), // Blue color for low bass volumes
+    colorB: new THREE.Color(0xff0000), // Red color for high bass volumes
   },
   // Vertex Shader
   `
@@ -21,14 +21,13 @@ const ColorShaderMaterial = shaderMaterial(
   `,
   // Fragment Shader
   `
-    uniform float uTime;
+    uniform float uMixValue;
     uniform vec3 colorA;
     uniform vec3 colorB;
     varying vec2 vUv;
 
     void main() {
-      float mixValue = (sin(uTime) * 0.5) + 0.5;
-      vec3 color = mix(colorA, colorB, mixValue);
+      vec3 color = mix(colorA, colorB, uMixValue);
       gl_FragColor = vec4(color, 1.0);
     }
   `

@@ -8,11 +8,13 @@ interface Song {
 }
 
 const AudioPlayer: React.FC = () => {
+  const debug = false;
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
-  const { setAmplitude, setFrequencies } = useAudioContext();
+  const { setAmplitude, setFrequencies, handlePlayPause, isPlaying: contextIsPlaying } = useAudioContext();
   const animationFrameRef = useRef<number | null>(null);
 
   // References for AudioContext and related nodes
@@ -68,56 +70,6 @@ const AudioPlayer: React.FC = () => {
     }
   };
 
-  // Handle audio ended
-  useEffect(() => {
-    if (!audioRef.current) return;
-
-    const handleEnded = () => {
-      console.log("Audio ended.");
-      setIsPlaying(false);
-      // Optionally implement song auto-advance
-      // setCurrentSongIndex((prev) => (prev + 1) % playlist.length);
-    };
-
-    audioRef.current.addEventListener('ended', handleEnded);
-    return () => {
-      audioRef.current?.removeEventListener('ended', handleEnded);
-    };
-  }, [playlist.length]);
-
-  // Handlers for next and previous songs
-  const playNext = useCallback(() => {
-    setCurrentSongIndex((prevIndex) => (prevIndex + 1) % playlist.length);
-  }, [playlist.length]);
-
-  const playPrevious = useCallback(() => {
-    setCurrentSongIndex((prevIndex) => (prevIndex - 1 + playlist.length) % playlist.length);
-  }, [playlist.length]);
-
-  // Add event listeners for audio element state
-  useEffect(() => {
-    if (!audioRef.current) return;
-
-    const audio = audioRef.current;
-
-    const handleCanPlay = () => console.log("Audio can play.");
-    const handlePlaying = () => console.log("Audio is playing.");
-    const handleWaiting = () => console.log("Audio is waiting.");
-    const handleError = (e: Event) => console.error("Audio error:", e);
-
-    audio.addEventListener('canplay', handleCanPlay);
-    audio.addEventListener('playing', handlePlaying);
-    audio.addEventListener('waiting', handleWaiting);
-    audio.addEventListener('error', handleError);
-
-    return () => {
-      audio.removeEventListener('canplay', handleCanPlay);
-      audio.removeEventListener('playing', handlePlaying);
-      audio.removeEventListener('waiting', handleWaiting);
-      audio.removeEventListener('error', handleError);
-    };
-  }, []);
-
   // Handle detailed audio errors
   useEffect(() => {
     if (!audioRef.current) return;
@@ -154,7 +106,7 @@ const AudioPlayer: React.FC = () => {
     };
   }, []);
 
-  // Add isPlayingRef to track the playing state consistently
+  // Define a ref to track playing state
   const isPlayingRef = useRef(false);
 
   // Function to update amplitude based on analyser node data
@@ -170,19 +122,19 @@ const AudioPlayer: React.FC = () => {
       return;
     }
 
-    console.log("AnalyserNode and DataArray ready.");
-    console.log("AnalyserNode:", analyserNodeRef.current);
-    console.log("DataArray:", dataArrayRef.current);
-    console.log("AudioContext:", audioContextRef.current);
-    console.log("AudioContext state:", audioContextRef.current?.state);
-    console.log("AudioContext destination:", audioContextRef.current?.destination);
-    console.log("Audio element:", audioRef.current);
-    console.log("Audio element volume:", audioRef.current?.volume);
-    console.log("Audio element currentTime:", audioRef.current?.currentTime);
-    console.log("Audio element paused:", audioRef.current?.paused);
+    debug && console.log("AnalyserNode and DataArray ready.");
+    debug && console.log("AnalyserNode:", analyserNodeRef.current);
+    debug && console.log("DataArray:", dataArrayRef.current);
+    debug && console.log("AudioContext:", audioContextRef.current);
+    debug && console.log("AudioContext state:", audioContextRef.current?.state);
+    debug && console.log("AudioContext destination:", audioContextRef.current?.destination);
+    debug && console.log("Audio element:", audioRef.current);
+    debug && console.log("Audio element volume:", audioRef.current?.volume);
+    debug && console.log("Audio element currentTime:", audioRef.current?.currentTime);
+    debug && console.log("Audio element paused:", audioRef.current?.paused);
 
     analyserNodeRef.current.getByteFrequencyData(dataArrayRef.current);
-    
+
     // Check if dataArrayRef.current has meaningful data
     const isSilent = dataArrayRef.current.every(value => value === 0);
 
@@ -193,7 +145,7 @@ const AudioPlayer: React.FC = () => {
     // Get frequency data
     const frequencyData = new Float32Array(analyserNodeRef.current.frequencyBinCount);
     analyserNodeRef.current.getFloatFrequencyData(frequencyData);
-    
+
     // Normalize frequency data
     const normalizedFrequencies = new Float32Array(frequencyData.length);
     for (let i = 0; i < frequencyData.length; i++) {
@@ -202,7 +154,7 @@ const AudioPlayer: React.FC = () => {
     }
 
     // Log normalized frequencies for debugging
-    console.log({
+    debug && console.log({
       min: Math.min(...Array.from(normalizedFrequencies)),
       max: Math.max(...Array.from(normalizedFrequencies)),
       avg: Array.from(normalizedFrequencies).reduce((sum, val) => sum + val, 0) / normalizedFrequencies.length,
@@ -216,94 +168,96 @@ const AudioPlayer: React.FC = () => {
 
     // Apply more aggressive scaling
     const scaledAmplitude = Math.pow(normalizedAmplitude, 1.5) * 2;
+
     const finalAmplitude = Math.min(scaledAmplitude, 1);
 
-    console.log("Raw Average:", average);
-    console.log("Normalized Amplitude:", normalizedAmplitude);
-    console.log("Scaled Amplitude:", scaledAmplitude);
-    console.log("Final Amplitude:", finalAmplitude);
+    debug && console.log("Raw Average:", average);
+    debug && console.log("Normalized Amplitude:", normalizedAmplitude);
+    debug && console.log("Scaled Amplitude:", scaledAmplitude);
+    debug && console.log("Final Amplitude:", finalAmplitude);
 
     setAmplitudeRef.current(finalAmplitude);
 
-    console.log("Is it playing:", isPlayingRef.current);
+    debug && console.log("Is it playing:", isPlayingRef.current);
 
     if (isPlayingRef.current) {
       animationFrameRef.current = requestAnimationFrame(updateAmplitude);
     }
   }, []);
 
-  // Toggle play/pause
+  // Function to toggle play/pause
   const togglePlayPause = useCallback(() => {
     if (!audioRef.current) return;
 
     if (isPlaying) {
       audioRef.current.pause();
       isPlayingRef.current = false;
-      // Reset amplitude to 0 when pausing
-      setAmplitudeRef.current(0);
-      
+      setAmplitudeRef.current(0); // Reset amplitude when pausing
+      handlePlayPause(false); // Update context state
+
       if (audioContextRef.current && audioContextRef.current.state === 'running') {
         audioContextRef.current.suspend().then(() => {
-          console.log("AudioContext suspended.");
+          debug && console.log("AudioContext suspended.");
         }).catch(error => {
-          console.error("Error suspending AudioContext:", error);
+          debug && console.error("Error suspending AudioContext:", error);
         });
       }
       if (animationFrameRef.current) {
-        console.log("Cancelling animation frame.");
+        debug && console.log("Cancelling animation frame.");
         cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;
       }
       setIsPlaying(false);
     } else {
-      console.log("Playing audio.");
+      debug && console.log("Playing audio.");
       // Initialize AudioContext if not already
       if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
-        console.log("Initializing AudioContext.");
+        debug && console.log("Initializing AudioContext.");
         audioContextRef.current = new window.AudioContext();
-        if (audioContextRef.current && audioRef.current) {
-          console.log("AudioContext and audioRef.current initialized.");
-          try {
+       
+        try {
+          if (audioContextRef.current && audioRef.current) {
+            debug && console.log("AudioContext and audioRef.current initialized.");
             // Ensure MediaElementSourceNode is only created once
             if (!sourceNodeRef.current) {
-              console.log("Initializing MediaElementSourceNode.");
+              debug && console.log("Initializing MediaElementSourceNode.");
               sourceNodeRef.current = audioContextRef.current.createMediaElementSource(audioRef.current);
             }
 
             // Initialize AnalyserNode if not already
             if (!analyserNodeRef.current) {
-              console.log("Initializing AnalyserNode.");
+              debug && console.log("Initializing AnalyserNode.");
               analyserNodeRef.current = audioContextRef.current.createAnalyser();
               analyserNodeRef.current.fftSize = 512;
               analyserNodeRef.current.smoothingTimeConstant = 0.6;
               analyserNodeRef.current.minDecibels = -90;
               analyserNodeRef.current.maxDecibels = -10;
 
-              console.log("AnalyserNode initialized.");
+              debug && console.log("AnalyserNode initialized.");
               const bufferLength = analyserNodeRef.current.frequencyBinCount;
-              console.log("BufferLength:", bufferLength);
+              debug && console.log("BufferLength:", bufferLength);
               dataArrayRef.current = new Uint8Array(bufferLength);
-              console.log("DataArray initialized.",dataArrayRef.current);
+              debug && console.log("DataArray initialized.", dataArrayRef.current);
             }
 
             // Connect nodes
             if (sourceNodeRef.current && analyserNodeRef.current && audioContextRef.current) {
               sourceNodeRef.current.connect(analyserNodeRef.current);
-              console.log("SourceNode connected to AnalyserNode.");
+              debug && console.log("SourceNode connected to AnalyserNode.");
               analyserNodeRef.current.connect(audioContextRef.current.destination);
-              console.log("AnalyserNode connected to AudioContext destination.");
-              console.log("AudioContext and nodes initialized.");
+              debug && console.log("AnalyserNode connected to AudioContext destination.");
+              debug && console.log("AudioContext and nodes initialized.");
             }
-          } catch (error) {
-            console.error("Error initializing AudioContext and nodes:", error);
           }
+        } catch (error) {
+          console.error("Error initializing AudioContext and nodes:", error);
         }
       }
 
       // Resume AudioContext if suspended
       if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
         audioContextRef.current.resume().then(() => {
-          console.log("AudioContext resumed:", audioContextRef.current?.state);
+          debug && console.log("AudioContext resumed:", audioContextRef.current?.state);
         }).catch(error => {
           console.error("Error resuming AudioContext:", error);
         });
@@ -314,13 +268,14 @@ const AudioPlayer: React.FC = () => {
         .then(() => {
           isPlayingRef.current = true;
           setIsPlaying(true);
+          handlePlayPause(true); // Update context state
           animationFrameRef.current = requestAnimationFrame(updateAmplitude);
         })
         .catch(error => {
           console.error("Error during audio playback:", error);
         });
     }
-  }, [isPlaying, updateAmplitude]);
+  }, [isPlaying, handlePlayPause, updateAmplitude, debug]);
 
   // Clean up AudioContext on unmount
   useEffect(() => {
@@ -331,13 +286,33 @@ const AudioPlayer: React.FC = () => {
       }
       if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
         audioContextRef.current.close().then(() => {
-          console.log("AudioContext closed.");
+          debug && console.log("AudioContext closed.");
         }).catch(error => {
           console.error("Error closing AudioContext:", error);
         });
       }
     };
-  }, []);
+  }, [debug]);
+
+  // Function to play the previous song
+  const playPrevious = () => {
+    setCurrentSongIndex((prevIndex) => (prevIndex === 0 ? playlist.length - 1 : prevIndex - 1));
+    if (audioRef.current) {
+      audioRef.current.pause(); // Pause current audio
+      audioRef.current.load(); // Load the new audio
+      audioRef.current.play(); // Play the new audio
+    }
+  };
+
+  // Function to play the next song
+  const playNext = () => {
+    setCurrentSongIndex((prevIndex) => (prevIndex === playlist.length - 1 ? 0 : prevIndex + 1));
+    if (audioRef.current) {
+      audioRef.current.pause(); // Pause current audio
+      audioRef.current.load(); // Load the new audio
+      audioRef.current.play(); // Play the new audio
+    }
+  };
 
   return (
     <div className="audio-player">
