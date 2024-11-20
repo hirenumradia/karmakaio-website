@@ -3,6 +3,7 @@ import { shaderMaterial } from "@react-three/drei";
 import { extend, MaterialNode  } from "@react-three/fiber";
 import React from "react";
 import { Vector3, Color, ColorRepresentation, ShaderMaterial } from "three";
+import { useAudioContext } from "../context/AudioContext";
 
 // 1. Define Uniform Interfaces with Direct Value Types
 interface PointUniforms {
@@ -16,6 +17,7 @@ interface LineUniforms {
   linewidth: number;
   uTime: number;
   uAmplitude: number;
+  uFrequencies: Float32Array;
 }
 
 // 2. Create Shader Materials Using `shaderMaterial` with Correct Uniform Definitions
@@ -57,6 +59,7 @@ export const LineShaderMaterial = shaderMaterial(
     linewidth: 1.0,
     uTime: 0.0,
     uAmplitude: 0.0,
+    uFrequencies: new Float32Array(512)
   },
   // Vertex Shader
   `
@@ -196,42 +199,55 @@ export const LineShaderMaterial = shaderMaterial(
     uniform vec3 color;
     uniform float uTime;
     uniform float uAmplitude;
+    uniform float uFrequencies[512];
 
     varying float vDistance;
     varying vec3 vPosition;
     varying float vAmplitude;
     varying vec3 vNormal;
 
-  void main() {
-    float attenuation = 1.0 - clamp(vDistance / maxDistance, 0.0, 1.0);
-    
-    // Dynamic color based on amplitude and position
-    vec3 baseColor = color;
-    float energyFactor = pow(vAmplitude, 1.5);
-    
-    // Pulsing effect
-    float pulse = smoothstep(0.0, 1.0, sin(uTime * 3.0) * 0.5 + 0.5);
-    float energyPulse = mix(0.8, 1.2, pulse * energyFactor);
-    
-    // Color variation based on position and energy
+    vec3 neonGreen = vec3(0.0, 1.0, 0.4);
+    vec3 neonPink = vec3(1.0, 0.0, 0.8);
     vec3 hotColor = vec3(1.0, 0.3, 0.1);
     vec3 coolColor = vec3(0.1, 0.3, 1.0);
-    float colorMix = smoothstep(-1.0, 1.0, sin(length(vPosition) * 0.2 + uTime));
-    vec3 dynamicColor = mix(coolColor, hotColor, colorMix);
-    
-    // Combine colors with energy
-    vec3 finalColor = mix(baseColor, dynamicColor, energyFactor * 0.5) * energyPulse;
-    
-    // Edge glow
-    float fresnel = pow(1.0 - abs(dot(normalize(vPosition), vNormal)), 2.0);
-    vec3 glowColor = vec3(0.3, 0.8, 1.0) * fresnel * vAmplitude;
-    
-    finalColor += glowColor;
-    
-    // Apply distance attenuation with smooth falloff
-    float smoothAttenuation = smoothstep(0.0, 1.0, attenuation);
-    gl_FragColor = vec4(finalColor * smoothAttenuation, smoothAttenuation);
-}
+
+    void main() {
+      float attenuation = 1.0 - clamp(vDistance / maxDistance, 0.0, 1.0);
+      
+      // Get frequency index based on position
+      float freqIndex = clamp(length(vPosition) * 10.0, 0.0, 511.0);
+      int index = int(freqIndex);
+      float freqValue = uFrequencies[index];
+      
+      // Dynamic color based on frequency and amplitude
+      float energyFactor = pow(vAmplitude, 1.5);
+      
+      // Pulsing effect
+      float pulse = smoothstep(0.0, 1.0, sin(uTime * 3.0) * 0.5 + 0.5);
+      float energyPulse = mix(0.8, 1.2, pulse * energyFactor);
+      
+      // Color variation based on position and energy
+      float colorMix = smoothstep(-1.0, 1.0, sin(length(vPosition) * 0.2 + uTime));
+      vec3 dynamicColor = mix(neonGreen, neonPink, freqValue);
+      
+      // Combine colors with energy
+      vec3 baseColor = mix(dynamicColor, color, 0.3) * energyPulse;
+      
+      // Add frequency-based intensity
+      float freqIntensity = freqValue * 0.5 + 0.5;
+      vec3 finalColor = baseColor * freqIntensity;
+      
+      // Enhanced edge glow with frequency influence
+      float fresnel = pow(1.0 - abs(dot(normalize(vPosition), vNormal)), 2.0);
+      vec3 glowColor = mix(neonGreen, neonPink, freqValue) * fresnel * (vAmplitude + freqValue) * 2.0;
+      
+      finalColor += glowColor;
+      
+      // Apply smooth attenuation with enhanced glow
+      float smoothAttenuation = smoothstep(0.0, 1.0, attenuation);
+      float glowStrength = 1.2; // Increase for more intense glow
+      gl_FragColor = vec4(finalColor * smoothAttenuation * glowStrength, smoothAttenuation);
+    }
   `
 );
 
@@ -275,6 +291,7 @@ interface LineMaterialProps {
   linewidth?: number;
   uTime?: number;
   uAmplitude?: number;
+  uFrequencies?: Float32Array;
 }
 
 // 7. Create React Components with Forwarded Refs and Correct Typing
@@ -291,22 +308,28 @@ export const PointMaterial = React.forwardRef<PointShaderMaterialType, PointMate
 );
 
 export const LineMaterial = React.forwardRef<LineShaderMaterialType, LineMaterialProps>(
-  ({ maxDistance = 100, uCameraPosition = new Float32Array([0, 0, 0]), color = 0xffffff, linewidth = 1, uTime = 0.0, uAmplitude = 0.0, ...props }, ref) => {
-    const cameraPosition = new Float32Array(
-      Array.isArray(uCameraPosition) ? uCameraPosition : [0, 0, 0]
-    );
-
+  ({ 
+    maxDistance = 100, 
+    uCameraPosition = new Float32Array([0, 0, 0]), 
+    color = 0xffffff, 
+    linewidth = 1, 
+    uTime = 0.0, 
+    uAmplitude = 0.0,
+    uFrequencies = new Float32Array(512), 
+    ...props 
+  }, ref) => {
     return (
       <lineShaderMaterial
         ref={ref}
         {...props}
         uniforms={{
           maxDistance: { value: maxDistance },
-          uCameraPosition: { value: cameraPosition },
+          uCameraPosition: { value: uCameraPosition },
           color: { value: new Color(color) },
           linewidth: { value: linewidth },
           uTime: { value: uTime },
           uAmplitude: { value: uAmplitude },
+          uFrequencies: { value: uFrequencies },
         }}
       />
     );

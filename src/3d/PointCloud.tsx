@@ -31,9 +31,10 @@ export const PointCloud: React.FC<PointCloudProps> = ({
   const progressRef = useRef(0);
   const previousPositions = useRef<Float32Array>(new Float32Array());
   const homePositions = useRef<THREE.Vector3[]>([]);
+  const lastLogTime = useRef(0);
   const { camera, clock } = useThree();
 
-  const { amplitude } = useAudioContext();
+  const { amplitude, frequencies } = useAudioContext();
 
   // Define variables for displacement (modifiable for tweaking)
   const displacementScale = useRef(1.0); // Base scale for displacement
@@ -226,6 +227,20 @@ export const PointCloud: React.FC<PointCloudProps> = ({
     if (lineMaterialRef.current?.uniforms) {
       lineMaterialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
       lineMaterialRef.current.uniforms.uAmplitude.value = amplitude;
+      lineMaterialRef.current.uniforms.uFrequencies.value = frequencies;
+
+      // Add debug logging
+      if (frequencies && frequencies.length > 0) {
+        console.log('Frequency Data:', {
+          min: Math.min.apply(null, Array.from(frequencies)),
+          max: Math.max.apply(null, Array.from(frequencies)),
+          avg: Array.from(frequencies).reduce((sum, val) => sum + val, 0) / frequencies.length,
+          length: frequencies.length,
+          firstFew: frequencies.slice(0, 5),  // Show first 5 values
+        });
+      } else {
+        console.log('No frequency data available');
+      }
     }
 
     if (pointMaterialRef.current?.uniforms) {
@@ -263,6 +278,7 @@ export const PointCloud: React.FC<PointCloudProps> = ({
             linewidth={1}
             uTime={clock.getElapsedTime()}
             uAmplitude={amplitude}
+            uFrequencies={frequencies}
             uCameraPosition={new Float32Array(camera.position.toArray())}
           />
         </lineSegments>

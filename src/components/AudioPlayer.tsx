@@ -12,7 +12,7 @@ const AudioPlayer: React.FC = () => {
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
-  const { setAmplitude } = useAudioContext();
+  const { setAmplitude, setFrequencies } = useAudioContext();
   const animationFrameRef = useRef<number | null>(null);
 
   // References for AudioContext and related nodes
@@ -23,10 +23,12 @@ const AudioPlayer: React.FC = () => {
 
   // Reference to ensure setAmplitude is always current
   const setAmplitudeRef = useRef(setAmplitude);
+  const setFrequenciesRef = useRef(setFrequencies);
 
   useEffect(() => {
     setAmplitudeRef.current = setAmplitude;
-  }, [setAmplitude]);
+    setFrequenciesRef.current = setFrequencies;
+  }, [setAmplitude, setFrequencies]);
 
   // Define the playlist
   const playlist: Song[] = [
@@ -188,12 +190,20 @@ const AudioPlayer: React.FC = () => {
       console.warn("AnalyserNode is receiving silent data.");
     }
 
-    // Calculate average amplitude
-    let sum = 0;
-    for (let i = 0; i < dataArrayRef.current.length; i++) {
-      sum += dataArrayRef.current[i];
+    // Get frequency data
+    const frequencyData = new Float32Array(analyserNodeRef.current.frequencyBinCount);
+    analyserNodeRef.current.getFloatFrequencyData(frequencyData);
+    
+    // Normalize frequency data
+    const normalizedFrequencies = new Float32Array(frequencyData.length);
+    for (let i = 0; i < frequencyData.length; i++) {
+      // Convert from dB to normalized value between 0 and 1
+      normalizedFrequencies[i] = (frequencyData[i] + 140) / 140; // Assuming minimum dB is -140
     }
+    
+    setFrequenciesRef.current(normalizedFrequencies);
 
+    const sum = dataArrayRef.current.reduce((acc, value) => acc + value, 0);
     const average = sum / dataArrayRef.current.length;
     const normalizedAmplitude = average / 255;
 
