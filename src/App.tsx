@@ -14,6 +14,7 @@ import "./App.css"; // Ensure you import the CSS
 import AudioPlayer from "./components/AudioPlayer"; // Import the AudioPlayer component
 import { AudioProvider } from "./context/AudioContext"; // Import the AudioProvider
 import AudioPlayerTest from "./components/AudioPlayerTest";
+import { Leva } from 'leva'
 
 const shapes = ["heart", "smiley", "saturn"] as const;
 type ShapeType = (typeof shapes)[number];
@@ -59,6 +60,7 @@ const App: React.FC = () => {
   return (
     <AudioProvider>
       <div className="App">
+        <Leva />
         {/* Audio Player anchored at the bottom */}
         <AudioPlayer />
 
@@ -139,6 +141,7 @@ const App: React.FC = () => {
             />
           </EffectComposer>
         </Canvas>
+
       </div>
     </AudioProvider>
   );

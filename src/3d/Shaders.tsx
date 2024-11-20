@@ -59,7 +59,8 @@ export const LineShaderMaterial = shaderMaterial(
     linewidth: 1.0,
     uTime: 0.0,
     uAmplitude: 0.0,
-    uFrequencies: new Float32Array(512)
+    uFrequencies: new Float32Array(256),
+    DEBUG_MODE: false,
   },
   // Vertex Shader
   `
@@ -199,54 +200,54 @@ export const LineShaderMaterial = shaderMaterial(
     uniform vec3 color;
     uniform float uTime;
     uniform float uAmplitude;
-    uniform float uFrequencies[512];
+    uniform float uFrequencies[256];
 
     varying float vDistance;
     varying vec3 vPosition;
     varying float vAmplitude;
     varying vec3 vNormal;
 
-    vec3 neonGreen = vec3(0.0, 1.0, 0.4);
-    vec3 neonPink = vec3(1.0, 0.0, 0.8);
-    vec3 hotColor = vec3(1.0, 0.3, 0.1);
-    vec3 coolColor = vec3(0.1, 0.3, 1.0);
-
     void main() {
       float attenuation = 1.0 - clamp(vDistance / maxDistance, 0.0, 1.0);
       
-      // Get frequency index based on position
-      float freqIndex = clamp(length(vPosition) * 10.0, 0.0, 511.0);
-      int index = int(freqIndex);
-      float freqValue = uFrequencies[index];
+      // Use position to sample different parts of the frequency spectrum
+      float positionOffset = length(vPosition);
+      int freqIndex = int(mod(positionOffset * 10.0, 256.0)); // Map position to frequency index
       
-      // Dynamic color based on frequency and amplitude
-      float energyFactor = pow(vAmplitude, 1.5);
+      // Get a local average of frequencies around this index
+      float freqSum = 0.0;
+      int sampleSize = 5;
+      for(int i = -2; i <= 2; i++) {
+          int idx = int(mod(float(freqIndex + i), 256.0));
+          freqSum += uFrequencies[idx];
+      }
+      float localFreq = freqSum / float(sampleSize);
       
-      // Pulsing effect
-      float pulse = smoothstep(0.0, 1.0, sin(uTime * 3.0) * 0.5 + 0.5);
-      float energyPulse = mix(0.8, 1.2, pulse * energyFactor);
+      // Normalize frequency value properly
+      float freqValue = clamp(localFreq, 0.0, 1.0);
+
+      // Enhanced Color Palette Mixing
+      vec3 lowColor = vec3(0.0, 1.0, 0.4);    // Green
+      vec3 midColor = vec3(0.0, 0.8, 1.0);    // Cyan
+      vec3 highColor = vec3(1.0, 0.0, 0.8);   // Pink
       
-      // Color variation based on position and energy
-      float colorMix = smoothstep(-1.0, 1.0, sin(length(vPosition) * 0.2 + uTime));
-      vec3 dynamicColor = mix(neonGreen, neonPink, freqValue);
+      vec3 finalColor;
+      if(freqValue < 0.33) {
+          // From lowColor to midColor
+          finalColor = mix(lowColor, midColor, freqValue / 0.33);
+      } else if(freqValue < 0.66) {
+          // From midColor to highColor
+          finalColor = mix(midColor, highColor, (freqValue - 0.33) / 0.33);
+      } else {
+          // From highColor to white for emphasis
+          finalColor = mix(highColor, vec3(1.0), (freqValue - 0.66) / 0.34);
+      }
       
-      // Combine colors with energy
-      vec3 baseColor = mix(dynamicColor, color, 0.3) * energyPulse;
+      // Add glow based on amplitude
+      float glowStrength = 1.0 + vAmplitude * 0.3;
       
-      // Add frequency-based intensity
-      float freqIntensity = freqValue * 0.5 + 0.5;
-      vec3 finalColor = baseColor * freqIntensity;
-      
-      // Enhanced edge glow with frequency influence
-      float fresnel = pow(1.0 - abs(dot(normalize(vPosition), vNormal)), 2.0);
-      vec3 glowColor = mix(neonGreen, neonPink, freqValue) * fresnel * (vAmplitude + freqValue) * 2.0;
-      
-      finalColor += glowColor;
-      
-      // Apply smooth attenuation with enhanced glow
-      float smoothAttenuation = smoothstep(0.0, 1.0, attenuation);
-      float glowStrength = 1.2; // Increase for more intense glow
-      gl_FragColor = vec4(finalColor * smoothAttenuation * glowStrength, smoothAttenuation);
+      // Apply the final color
+      gl_FragColor = vec4(lowColor * glowStrength, smoothstep(0.0, 1.0, attenuation));
     }
   `
 );

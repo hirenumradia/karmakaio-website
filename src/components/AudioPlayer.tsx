@@ -198,9 +198,16 @@ const AudioPlayer: React.FC = () => {
     const normalizedFrequencies = new Float32Array(frequencyData.length);
     for (let i = 0; i < frequencyData.length; i++) {
       // Convert from dB to normalized value between 0 and 1
-      normalizedFrequencies[i] = (frequencyData[i] + 140) / 140; // Assuming minimum dB is -140
+      normalizedFrequencies[i] = Math.max((frequencyData[i] + 140) / 140, 0.0);
     }
-    
+
+    // Log normalized frequencies for debugging
+    console.log({
+      min: Math.min(...Array.from(normalizedFrequencies)),
+      max: Math.max(...Array.from(normalizedFrequencies)),
+      avg: Array.from(normalizedFrequencies).reduce((sum, val) => sum + val, 0) / normalizedFrequencies.length,
+    });
+
     setFrequenciesRef.current(normalizedFrequencies);
 
     const sum = dataArrayRef.current.reduce((acc, value) => acc + value, 0);

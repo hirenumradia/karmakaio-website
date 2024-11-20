@@ -11,6 +11,8 @@ import {
 } from "./Shapes";
 import { kdTree } from "kd-tree-javascript";
 import { useAudioContext } from "../context/AudioContext";
+import { ShaderDebugger } from "./ShaderDebugger";
+import { useShaderDebugControls } from "./DebugControls";
 
 interface PointCloudProps {
   shape: "heart" | "smiley" | "saturn";
@@ -35,6 +37,7 @@ export const PointCloud: React.FC<PointCloudProps> = ({
   const { camera, clock } = useThree();
 
   const { amplitude, frequencies } = useAudioContext();
+  const debugControls = useShaderDebugControls();
 
   // Define variables for displacement (modifiable for tweaking)
   const displacementScale = useRef(1.0); // Base scale for displacement
@@ -73,6 +76,13 @@ export const PointCloud: React.FC<PointCloudProps> = ({
     }
     return scaledPositions;
   }, [shape, pointCount, scale]);
+
+  useEffect(() => {
+    if (lineMaterialRef.current) {
+      lineMaterialRef.current.defines.DEBUG_MODE = debugControls.showDebug;
+      lineMaterialRef.current.needsUpdate = true;
+    }
+  }, [debugControls.showDebug]);
 
   // Initialize home positions and buffer attributes
   useEffect(() => {
@@ -157,7 +167,7 @@ export const PointCloud: React.FC<PointCloudProps> = ({
       );
       lineGeometryRef.current = geometry;
     }
-  }, [initialShape]); // Only run when initial shape changes
+  }, [initialShape]);
 
   // Animation frame update
   useFrame((state, delta) => {
@@ -225,6 +235,9 @@ export const PointCloud: React.FC<PointCloudProps> = ({
     lineGeometryRef.current.getAttribute("position").needsUpdate = true;
     
     if (lineMaterialRef.current?.uniforms) {
+      // Apply debug multiplier to frequencies
+      const adjustedFrequencies = frequencies.map(f => f * debugControls.freqMultiplier);
+      
       lineMaterialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
       lineMaterialRef.current.uniforms.uAmplitude.value = amplitude;
       lineMaterialRef.current.uniforms.uFrequencies.value = frequencies;
@@ -241,6 +254,15 @@ export const PointCloud: React.FC<PointCloudProps> = ({
       } else {
         console.log('No frequency data available');
       }
+
+      lineMaterialRef.current.uniforms.uFrequencies.value = adjustedFrequencies;
+
+      // Store debug values
+      lineMaterialRef.current.userData.debug = {
+        freqValue: frequencies[0], // First frequency bin
+        localFreq: frequencies.reduce((sum, val) => sum + val, 0) / frequencies.length, // Average
+        freqIndex: 0
+      };
     }
 
     if (pointMaterialRef.current?.uniforms) {
@@ -283,6 +305,7 @@ export const PointCloud: React.FC<PointCloudProps> = ({
           />
         </lineSegments>
       )}
+      <ShaderDebugger material={lineMaterialRef} />
     </group>
   );
 };
