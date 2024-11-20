@@ -212,9 +212,9 @@ export const LineShaderMaterial = shaderMaterial(
       
       // Use position to sample different parts of the frequency spectrum
       float positionOffset = length(vPosition);
-      int freqIndex = int(mod(positionOffset * 10.0, 256.0)); // Map position to frequency index
+      int freqIndex = int(mod(positionOffset * 10.0, 256.0));
       
-      // Get a local average of frequencies around this index
+      // Get local frequency average
       float freqSum = 0.0;
       int sampleSize = 5;
       for(int i = -2; i <= 2; i++) {
@@ -222,8 +222,6 @@ export const LineShaderMaterial = shaderMaterial(
           freqSum += uFrequencies[idx];
       }
       float localFreq = freqSum / float(sampleSize);
-      
-      // Normalize frequency value properly
       float freqValue = clamp(localFreq, 0.0, 1.0);
 
       // Enhanced Color Palette Mixing
@@ -231,23 +229,50 @@ export const LineShaderMaterial = shaderMaterial(
       vec3 midColor = vec3(0.0, 0.8, 1.0);    // Cyan
       vec3 highColor = vec3(1.0, 0.0, 0.8);   // Pink
       
+      // Debug: Output different colors based on which range we're in
+      vec3 debugColor;
+      if(freqValue < 0.33) {
+          debugColor = lowColor;  // Should be green
+      } else if(freqValue < 0.66) {
+          debugColor = midColor;  // Should be cyan
+      } else {
+          debugColor = highColor; // Should be pink
+      }
+          
+      // Calculate mix ratio
+      float mixRatio = freqValue < 0.33 
+          ? freqValue / 0.33 
+          : freqValue < 0.66 
+              ? (freqValue - 0.33) / 0.33
+              : (freqValue - 0.66) / 0.34;
+
+      // Mix colors based on frequency value
       vec3 finalColor;
       if(freqValue < 0.33) {
-          // From lowColor to midColor
           finalColor = mix(lowColor, midColor, freqValue / 0.33);
       } else if(freqValue < 0.66) {
-          // From midColor to highColor
           finalColor = mix(midColor, highColor, (freqValue - 0.33) / 0.33);
       } else {
-          // From highColor to white for emphasis
           finalColor = mix(highColor, vec3(1.0), (freqValue - 0.66) / 0.34);
       }
-      
-      // Add glow based on amplitude
+
+      // Calculate glow strength based on amplitude
       float glowStrength = 1.0 + vAmplitude * 0.3;
-      
-      // Apply the final color
-      gl_FragColor = vec4(lowColor * glowStrength, smoothstep(0.0, 1.0, attenuation));
+
+      #ifdef DEBUG_MODE
+          // R: Which range we're in (0 = low, 0.5 = mid, 1 = high)
+          // G: freqValue
+          // B: mixRatio
+          gl_FragColor = vec4(
+              freqValue < 0.33 ? 0.0 : freqValue < 0.66 ? 0.5 : 1.0,
+              freqValue,
+              mixRatio,
+              1.0
+          );
+      #else
+          // Use the mixed color with glow and attenuation
+          gl_FragColor = vec4(finalColor * glowStrength, smoothstep(0.0, 1.0, attenuation));
+      #endif
     }
   `
 );
@@ -316,7 +341,7 @@ export const LineMaterial = React.forwardRef<LineShaderMaterialType, LineMateria
     linewidth = 1, 
     uTime = 0.0, 
     uAmplitude = 0.0,
-    uFrequencies = new Float32Array(512), 
+    uFrequencies = new Float32Array(256).fill(0),
     ...props 
   }, ref) => {
     return (

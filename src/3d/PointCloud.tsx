@@ -235,34 +235,54 @@ export const PointCloud: React.FC<PointCloudProps> = ({
     lineGeometryRef.current.getAttribute("position").needsUpdate = true;
     
     if (lineMaterialRef.current?.uniforms) {
-      // Apply debug multiplier to frequencies
-      const adjustedFrequencies = frequencies.map(f => f * debugControls.freqMultiplier);
+      // Ensure frequencies exist and create adjusted frequencies only once
+      const validFrequencies = frequencies || new Float32Array(256).fill(0);
+      const adjustedFrequencies = validFrequencies.map(f => f * (debugControls.freqMultiplier || 1));
       
+      // Update uniforms
       lineMaterialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
-      lineMaterialRef.current.uniforms.uAmplitude.value = amplitude;
-      lineMaterialRef.current.uniforms.uFrequencies.value = frequencies;
-
-      // Add debug logging
-      if (frequencies && frequencies.length > 0) {
-        console.log('Frequency Data:', {
-          min: Math.min.apply(null, Array.from(frequencies)),
-          max: Math.max.apply(null, Array.from(frequencies)),
-          avg: Array.from(frequencies).reduce((sum, val) => sum + val, 0) / frequencies.length,
-          length: frequencies.length,
-          firstFew: frequencies.slice(0, 5),  // Show first 5 values
-        });
-      } else {
-        console.log('No frequency data available');
-      }
-
+      lineMaterialRef.current.uniforms.uAmplitude.value = amplitude || 0;
       lineMaterialRef.current.uniforms.uFrequencies.value = adjustedFrequencies;
 
-      // Store debug values
+      // Debug logging only if frequencies exist
+      if (validFrequencies.length > 0) {
+        console.log('Frequency Data:', {
+          min: Math.min(...Array.from(validFrequencies)),
+          max: Math.max(...Array.from(validFrequencies)),
+          avg: Array.from(validFrequencies).reduce((sum, val) => sum + val, 0) / validFrequencies.length,
+          length: validFrequencies.length,
+          firstFew: validFrequencies.slice(0, 5),
+        });
+      }
+
+      // Enhanced debug values using validFrequencies
       lineMaterialRef.current.userData.debug = {
-        freqValue: frequencies[0], // First frequency bin
-        localFreq: frequencies.reduce((sum, val) => sum + val, 0) / frequencies.length, // Average
-        freqIndex: 0
+        freqValue: validFrequencies[0] || 0,
+        localFreq: validFrequencies.length ? 
+          validFrequencies.reduce((sum, val) => sum + val, 0) / validFrequencies.length : 0,
+        freqIndex: 0,
+        colorRange: (validFrequencies[0] || 0) < 0.33 ? "low" : 
+                   (validFrequencies[0] || 0) < 0.66 ? "mid" : "high",
+        expectedColor: (validFrequencies[0] || 0) < 0.33 ? "green->cyan" : 
+                      (validFrequencies[0] || 0) < 0.66 ? "cyan->pink" : "pink->white",
+        mixRatio: calculateMixRatio(validFrequencies[0] || 0)
       };
+
+      // Add the new frequency analysis log here
+      console.log('Frequency Analysis:', {
+        value: validFrequencies[0] || 0,
+        range: getFrequencyRange(validFrequencies[0] || 0),
+        mixProgress: `${(calculateMixRatio(validFrequencies[0] || 0) * 100).toFixed(1)}%`
+      });
+
+      // Existing logging code
+      if (state.clock.elapsedTime - lastLogTime.current > 0.5) {
+        console.group('Shader Debug');
+        console.table(lineMaterialRef.current.userData.debug);
+        console.log('Full Debug Info:', lineMaterialRef.current.userData.debug);
+        console.groupEnd();
+        lastLogTime.current = state.clock.elapsedTime;
+      }
     }
 
     if (pointMaterialRef.current?.uniforms) {
@@ -271,6 +291,19 @@ export const PointCloud: React.FC<PointCloudProps> = ({
 
     positionsRef.current.needsUpdate = true;
   });
+
+  // Helper function to calculate mix ratio
+  const calculateMixRatio = (freq: number): number => {
+    if (freq < 0.33) return freq / 0.33;
+    if (freq < 0.66) return (freq - 0.33) / 0.33;
+    return (freq - 0.66) / 0.34;
+  };
+
+  const getFrequencyRange = (freq: number): string => {
+    if (freq < 0.33) return "LOW (should be green->cyan)";
+    if (freq < 0.66) return "MID (should be cyan->pink)";
+    return "HIGH (should be pink->white)";
+  };
 
   return (
     <group>
