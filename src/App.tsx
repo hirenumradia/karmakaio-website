@@ -15,6 +15,7 @@ import AudioPlayer from "./components/AudioPlayer"; // Import the AudioPlayer co
 import { AudioProvider } from "./context/AudioContext"; // Import the AudioProvider
 import AudioPlayerTest from "./components/AudioPlayerTest";
 import { Leva } from 'leva'
+import PointCloudTest from "./3d/PointCloudTest";
 
 const shapes = ["heart", "smiley", "saturn"] as const;
 type ShapeType = (typeof shapes)[number];
@@ -130,7 +131,8 @@ const App: React.FC = () => {
             spiralTightness={spiralTightness}
             chaosAmount={chaosAmount} 
           />
-          <PointCloud shape={shape} pointCount={500} scale={5} />
+          <PointCloudTest />
+          {/* <PointCloud shape={shape} pointCount={500} scale={5} /> */}
           <KarmaHeading />
           <EffectComposer>
             <Bloom

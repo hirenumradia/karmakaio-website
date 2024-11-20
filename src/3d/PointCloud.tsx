@@ -1,6 +1,6 @@
 // src/3d/PointCloud.tsx
 
-import React, { useMemo, useRef, useEffect } from "react";
+import React, { useMemo, useRef, useEffect, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { PointMaterial, LineMaterial } from "./Shaders";
@@ -169,6 +169,9 @@ export const PointCloud: React.FC<PointCloudProps> = ({
     }
   }, [initialShape]);
 
+  // Use ref instead of state
+  const dominantFreqRef = useRef(0);
+
   // Animation frame update
   useFrame((state, delta) => {
     if (!positionsRef.current || !lineGeometryRef.current) return;
@@ -231,64 +234,49 @@ export const PointCloud: React.FC<PointCloudProps> = ({
       linePositions[lineIndex + 2] = positions[posIndex + 2];
     });
 
-    // Update materials and geometries
+    // Update geometry
     lineGeometryRef.current.getAttribute("position").needsUpdate = true;
-    
+
+    // Update material uniforms directly in useFrame
     if (lineMaterialRef.current?.uniforms) {
-      // Ensure frequencies exist and create adjusted frequencies only once
-      const validFrequencies = frequencies || new Float32Array(256).fill(0);
-      const adjustedFrequencies = validFrequencies.map(f => f * (debugControls.freqMultiplier || 1));
+      const material = lineMaterialRef.current;
       
-      // Update uniforms
-      lineMaterialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
-      lineMaterialRef.current.uniforms.uAmplitude.value = amplitude || 0;
-      lineMaterialRef.current.uniforms.uFrequencies.value = adjustedFrequencies;
-
-      // Debug logging only if frequencies exist
-      if (validFrequencies.length > 0) {
-        console.log('Frequency Data:', {
-          min: Math.min(...Array.from(validFrequencies)),
-          max: Math.max(...Array.from(validFrequencies)),
-          avg: Array.from(validFrequencies).reduce((sum, val) => sum + val, 0) / validFrequencies.length,
-          length: validFrequencies.length,
-          firstFew: validFrequencies.slice(0, 5),
-        });
-      }
-
-      // Enhanced debug values using validFrequencies
-      lineMaterialRef.current.userData.debug = {
-        freqValue: validFrequencies[0] || 0,
-        localFreq: validFrequencies.length ? 
-          validFrequencies.reduce((sum, val) => sum + val, 0) / validFrequencies.length : 0,
-        freqIndex: 0,
-        colorRange: (validFrequencies[0] || 0) < 0.33 ? "low" : 
-                   (validFrequencies[0] || 0) < 0.66 ? "mid" : "high",
-        expectedColor: (validFrequencies[0] || 0) < 0.33 ? "green->cyan" : 
-                      (validFrequencies[0] || 0) < 0.66 ? "cyan->pink" : "pink->white",
-        mixRatio: calculateMixRatio(validFrequencies[0] || 0)
-      };
-
-      // Add the new frequency analysis log here
-      console.log('Frequency Analysis:', {
-        value: validFrequencies[0] || 0,
-        range: getFrequencyRange(validFrequencies[0] || 0),
-        mixProgress: `${(calculateMixRatio(validFrequencies[0] || 0) * 100).toFixed(1)}%`
+      // Calculate frequencies once per frame
+      const frequenciesArray = Array.from(frequencies || new Uint8Array(256));
+      const maxFreq = Math.max(...frequenciesArray);
+      
+      const normalizedFrequencies = frequenciesArray.map(f => {
+        const normalized = f / 255.0;
+        const boosted = Math.pow(normalized, 0.5);
+        return Math.min(boosted * 3.0, 1.0);
       });
-
-      // Existing logging code
-      if (state.clock.elapsedTime - lastLogTime.current > 0.5) {
-        console.group('Shader Debug');
-        console.table(lineMaterialRef.current.userData.debug);
-        console.log('Full Debug Info:', lineMaterialRef.current.userData.debug);
-        console.groupEnd();
-        lastLogTime.current = state.clock.elapsedTime;
+      
+      const newDominantFreq = normalizedFrequencies
+        .slice(0, 40)
+        .reduce((sum, val) => sum + val, 0) / 40;
+      
+      const scaledDominantFreq = Math.min(newDominantFreq * 3.0, 1.0);
+      
+      // Update all uniforms in one place
+      material.uniforms.uDominantFrequency.value = scaledDominantFreq;
+      material.uniforms.uAmplitude.value = amplitude || 0.0;
+      material.uniforms.uTime.value = state.clock.elapsedTime;
+      material.uniforms.uCameraPosition.value = new Float32Array(camera.position.toArray());
+      
+      // Optional debug logging
+      if (debugControls.showDebug && Date.now() - lastLogTime.current > 1000) {
+        console.log('Audio Analysis:', {
+          rawMax: maxFreq,
+          normalizedMax: Math.max(...normalizedFrequencies),
+          finalFreq: scaledDominantFreq,
+          range: scaledDominantFreq < 0.33 ? 'LOW' : 
+                 scaledDominantFreq < 0.66 ? 'MID' : 'HIGH'
+        });
+        lastLogTime.current = Date.now();
       }
     }
 
-    if (pointMaterialRef.current?.uniforms) {
-      pointMaterialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
-    }
-
+    // Update positions ref
     positionsRef.current.needsUpdate = true;
   });
 
@@ -304,6 +292,17 @@ export const PointCloud: React.FC<PointCloudProps> = ({
     if (freq < 0.66) return "MID (should be cyan->pink)";
     return "HIGH (should be pink->white)";
   };
+
+  // Add error handling for shader compilation
+  useEffect(() => {
+    if (lineMaterialRef.current) {
+        try {
+            lineMaterialRef.current.needsUpdate = true;
+        } catch (error) {
+            console.error('Shader compilation error:', error);
+        }
+    }
+  }, []);
 
   return (
     <group>
@@ -328,12 +327,11 @@ export const PointCloud: React.FC<PointCloudProps> = ({
         <lineSegments geometry={lineGeometryRef.current}>
           <LineMaterial
             ref={lineMaterialRef}
-            color={0x00ff44}
             maxDistance={100}
             linewidth={1}
             uTime={clock.getElapsedTime()}
             uAmplitude={amplitude}
-            uFrequencies={frequencies}
+            uDominantFrequency={dominantFreqRef.current}
             uCameraPosition={new Float32Array(camera.position.toArray())}
           />
         </lineSegments>
