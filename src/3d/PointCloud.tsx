@@ -41,6 +41,9 @@ export const PointCloud: React.FC<PointCloudProps> = ({
   const scatterScale = useRef(0.2); // Scale factor for scatter displacement
   const nonLinearExponent = useRef(1.5); // Exponent for non-linear scaling
 
+  // Add this new ref to store the initial neighbor indices
+  const neighborIndicesRef = useRef<number[]>([]);
+
   // Generate initial shape
   const initialShape = useMemo(() => {
     let positions: Float32Array;
@@ -94,17 +97,18 @@ export const PointCloud: React.FC<PointCloudProps> = ({
     }
   }, [initialShape]);
 
-  // Generate line positions based on KD-Tree
+  // Modify the line positions effect to only calculate KNN once
   useEffect(() => {
     if (!positionsRef.current) return;
 
-    const generateLinePositions = (positionsArray: Float32Array, K: number): Float32Array => {
+    const generateLineIndices = (positionsArray: Float32Array, K: number): number[] => {
       const points = [];
       for (let i = 0; i < positionsArray.length; i += 3) {
         points.push({
           x: positionsArray[i],
           y: positionsArray[i + 1],
           z: positionsArray[i + 2],
+          index: i / 3,
         });
       }
 
@@ -117,49 +121,41 @@ export const PointCloud: React.FC<PointCloudProps> = ({
       };
 
       const tree = new kdTree(points, distance, ["x", "y", "z"]);
-
-      const posArray: number[] = [];
-      points.forEach((point, index) => {
+      const indices: number[] = [];
+      
+      points.forEach((point) => {
         const nearest = tree.nearest(point, K + 1);
         nearest.forEach((neighbor: any[]) => {
           if (neighbor[0] !== point) {
-            posArray.push(point.x, point.y, point.z);
-            posArray.push(neighbor[0].x, neighbor[0].y, neighbor[0].z);
+            indices.push(point.index, neighbor[0].index);
           }
         });
       });
 
-      return new Float32Array(posArray);
+      return indices;
     };
 
-    const linePositions = generateLinePositions(
+    // Store the neighbor indices
+    neighborIndicesRef.current = generateLineIndices(
       positionsRef.current.array as Float32Array,
       6
-    ); // K=6 nearest neighbors
+    );
 
+    // Create initial line geometry
+    const linePositions = new Float32Array(neighborIndicesRef.current.length * 3);
     if (!lineGeometryRef.current) {
       const geometry = new THREE.BufferGeometry();
       geometry.setAttribute(
         "position",
-        new THREE.BufferAttribute(linePositions, 3).setUsage(
-          THREE.DynamicDrawUsage
-        )
+        new THREE.BufferAttribute(linePositions, 3).setUsage(THREE.DynamicDrawUsage)
       );
       lineGeometryRef.current = geometry;
-    } else {
-      lineGeometryRef.current.setAttribute(
-        "position",
-        new THREE.BufferAttribute(linePositions, 3).setUsage(
-          THREE.DynamicDrawUsage
-        )
-      );
     }
-  });
-  
+  }, [initialShape]); // Only run when initial shape changes
 
   // Animation frame update
   useFrame((state, delta) => {
-    if (!positionsRef.current) return;
+    if (!positionsRef.current || !lineGeometryRef.current) return;
 
     const positions = positionsRef.current.array as Float32Array;
 
@@ -198,6 +194,16 @@ export const PointCloud: React.FC<PointCloudProps> = ({
       }
     }
 
+    // Update line positions based on current point positions
+    const linePositions = lineGeometryRef.current.getAttribute("position").array as Float32Array;
+    neighborIndicesRef.current.forEach((pointIndex, i) => {
+      const posIndex = pointIndex * 3;
+      const lineIndex = i * 3;
+      linePositions[lineIndex] = positions[posIndex];
+      linePositions[lineIndex + 1] = positions[posIndex + 1];
+      linePositions[lineIndex + 2] = positions[posIndex + 2];
+    });
+    lineGeometryRef.current.getAttribute("position").needsUpdate = true;
 
     // Update materials
     if (lineMaterialRef.current?.uniforms) {

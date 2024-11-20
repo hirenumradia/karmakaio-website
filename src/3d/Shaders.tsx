@@ -144,26 +144,39 @@ export const LineShaderMaterial = shaderMaterial(
       vAmplitude = uAmplitude;
       vNormal = normalize(pos);
       
-      // Ferrofluid-like behavior
-      float noiseTime = uTime * 0.5;
-      float noise = snoise(vec3(pos.x * 0.3, pos.y * 0.3, noiseTime));
+      // Smoother audio-reactive movement
+      float noiseTime = uTime * 0.3; // Slowed down noise time
+      float noise = snoise(vec3(pos.x * 0.2, pos.y * 0.2, noiseTime));
       
-      // Radial wave effect
+      // Smooth out the amplitude using multiple frequencies
+      float smoothAmplitude = uAmplitude * 0.7 + // Direct amplitude influence
+                             (sin(uTime * 2.0) * 0.15 + 0.15) * uAmplitude + // Slow pulse
+                             (sin(uTime * 4.0) * 0.1 + 0.1) * uAmplitude;   // Fast pulse
+      
+      // Radial wave with smoother falloff
       float radialDistance = length(pos);
-      float radialWave = sin(radialDistance * 0.8 - uTime * 2.0);
+      float radialWave = sin(radialDistance * 0.5 - uTime * 1.5) * 
+                        exp(-radialDistance * 0.15); // Exponential falloff
       
-      // Combined displacement
-      float baseDisplacement = uAmplitude * (0.3 + 0.7 * noise);
-      float waveDisplacement = radialWave * uAmplitude * 0.3;
+      // Organic movement blend
+      float baseDisplacement = smoothAmplitude * (0.5 + 0.5 * noise);
+      float waveDisplacement = radialWave * smoothAmplitude * 0.4;
       
-      // Smooth falloff from center
-      float falloff = exp(-radialDistance * 0.1);
+      // Smooth distance-based falloff
+      float falloff = exp(-radialDistance * 0.08);
       
-      // Apply displacement along normal
-      pos += vNormal * (baseDisplacement + waveDisplacement) * falloff;
+      // Blend different motion components
+      vec3 displacement = vNormal * (
+          baseDisplacement * falloff +
+          waveDisplacement +
+          noise * smoothAmplitude * 0.3
+      );
       
-      // Add subtle rotation
-      float rotationAngle = uTime * 0.2 * (1.0 - falloff);
+      // Apply smoother displacement
+      pos += displacement;
+      
+      // Gentler rotation
+      float rotationAngle = uTime * 0.15 * (1.0 - falloff) * smoothAmplitude;
       float cosA = cos(rotationAngle);
       float sinA = sin(rotationAngle);
       pos.xz = mat2(cosA, -sinA, sinA, cosA) * pos.xz;
