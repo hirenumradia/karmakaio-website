@@ -69,9 +69,9 @@ const App: React.FC = () => {
         <button
           className="glass-button"
           onClick={() => window.open('https://linktr.ee/karmakaio', '_blank')}
-          aria-label="EXPLORE" // Added for accessibility
+          aria-label="OPEN" // Added for accessibility
         >
-          DISCOVER
+          OPEN 
         </button>
         <Canvas
           onClick={handleCanvasClick}
