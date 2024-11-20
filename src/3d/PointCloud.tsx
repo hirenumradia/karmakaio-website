@@ -44,6 +44,11 @@ export const PointCloud: React.FC<PointCloudProps> = ({
   // Add this new ref to store the initial neighbor indices
   const neighborIndicesRef = useRef<number[]>([]);
 
+  // Add these new refs for position interpolation
+  const currentPositions = useRef<Float32Array>(new Float32Array());
+  const targetPositions = useRef<Float32Array>(new Float32Array());
+  const interpolationSpeed = useRef(0.15); // Adjust this value to control smoothness (0.1-0.3 range)
+
   // Generate initial shape
   const initialShape = useMemo(() => {
     let positions: Float32Array;
@@ -158,29 +163,34 @@ export const PointCloud: React.FC<PointCloudProps> = ({
     if (!positionsRef.current || !lineGeometryRef.current) return;
 
     const positions = positionsRef.current.array as Float32Array;
+    
+    // Initialize current and target positions if not already set
+    if (currentPositions.current.length === 0) {
+      currentPositions.current = new Float32Array(positions.length);
+      targetPositions.current = new Float32Array(positions.length);
+      positions.forEach((v, i) => {
+        currentPositions.current[i] = v;
+        targetPositions.current[i] = v;
+      });
+    }
 
-    // Reduce the displacement effects
+    // Calculate new target positions
     const scaledAmplitude = Math.pow(amplitude * 2, nonLinearExponent.current) * displacementScale.current;
     const dynamicScatterProbability = scatterProbability.current * (1 + amplitude);
     
-    // Apply audio-reactive displacement to each point
     for (let i = 0; i < positions.length; i += 3) {
       const home = homePositions.current[i / 3];
-      
       const shouldScatter = Math.random() < dynamicScatterProbability;
       
       if (shouldScatter) {
-        // Generate random displacement direction with increased range
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.random() * Math.PI;
-        const r = scaledAmplitude * scatterScale.current * 3; // Increased scatter range
+        const r = scaledAmplitude * scatterScale.current * 3;
         
-        // Convert spherical to Cartesian coordinates with more dramatic movement
-        positions[i] = home.x + r * Math.sin(phi) * Math.cos(theta);
-        positions[i + 1] = home.y + r * Math.sin(phi) * Math.sin(theta);
-        positions[i + 2] = home.z + r * Math.cos(phi);
+        targetPositions.current[i] = home.x + r * Math.sin(phi) * Math.cos(theta);
+        targetPositions.current[i + 1] = home.y + r * Math.sin(phi) * Math.sin(theta);
+        targetPositions.current[i + 2] = home.z + r * Math.cos(phi);
       } else {
-        // Radial displacement from home position with pulsing effect
         const pulseFreq = 2.0;
         const time = state.clock.elapsedTime;
         const pulseFactor = 1 + Math.sin(time * pulseFreq) * 0.2;
@@ -188,13 +198,19 @@ export const PointCloud: React.FC<PointCloudProps> = ({
         const dir = home.clone().normalize();
         const displacement = dir.multiplyScalar(scaledAmplitude * pulseFactor);
         
-        positions[i] = home.x + displacement.x;
-        positions[i + 1] = home.y + displacement.y;
-        positions[i + 2] = home.z + displacement.z;
+        targetPositions.current[i] = home.x + displacement.x;
+        targetPositions.current[i + 1] = home.y + displacement.y;
+        targetPositions.current[i + 2] = home.z + displacement.z;
       }
     }
 
-    // Update line positions based on current point positions
+    // Smoothly interpolate current positions towards target positions
+    for (let i = 0; i < positions.length; i++) {
+      currentPositions.current[i] += (targetPositions.current[i] - currentPositions.current[i]) * interpolationSpeed.current;
+      positions[i] = currentPositions.current[i];
+    }
+
+    // Update line positions using interpolated positions
     const linePositions = lineGeometryRef.current.getAttribute("position").array as Float32Array;
     neighborIndicesRef.current.forEach((pointIndex, i) => {
       const posIndex = pointIndex * 3;
@@ -203,9 +219,10 @@ export const PointCloud: React.FC<PointCloudProps> = ({
       linePositions[lineIndex + 1] = positions[posIndex + 1];
       linePositions[lineIndex + 2] = positions[posIndex + 2];
     });
-    lineGeometryRef.current.getAttribute("position").needsUpdate = true;
 
-    // Update materials
+    // Update materials and geometries
+    lineGeometryRef.current.getAttribute("position").needsUpdate = true;
+    
     if (lineMaterialRef.current?.uniforms) {
       lineMaterialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
       lineMaterialRef.current.uniforms.uAmplitude.value = amplitude;
