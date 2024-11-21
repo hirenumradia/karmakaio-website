@@ -243,37 +243,27 @@
     justify-content: center; /* Horizontally centers the text */
   
     /* Responsive Padding using calc(clamp(...)) */
-    padding: calc(clamp(1.0vw, 1.4rem, 3vw)) 2vw calc(clamp(0.8vw, 1.2rem, 2.5vw)) 2vw; /* Top, Right, Bottom, Left */
+    padding: calc(clamp(1.0rem, 1.4rem, 3rem)) 2vw calc(clamp(0.8rem, 1.2rem, 2.5rem)) 2vw; /* Top, Right, Bottom, Left */
   
-    /* Background */
-    background: linear-gradient(135deg, rgba(205, 15, 195, 0.9), rgba(96, 12, 156, 0.9)); /* Semi-transparent hot pink to purple gradient */
+    /* Updated Background */
+    background: rgba(0, 0, 0, 0.2); /* Black glass background */
   
-    background: linear-gradient(217deg, rgba(205, 15, 195, 1), rgba(133, 7, 223, 0.1) 90.71%),
-    linear-gradient(336deg, rgba(5, 236, 5, 0.8), rgba(212, 231, 6, 0.9) 70.71%);
+    /* Updated Border and Border Radius */
+    border: 2px solid white;
+    border-radius: 9999px; /* Fully rounded */
   
-    /* Border Radius */
-    border-radius: 0.1em; /* Maintains existing border-radius */
+    /* Updated Text Color */
+    color: white;
   
-    border: 1px solid #410f38;
+    /* Updated Glassmorphism Effect */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   
-    /* Font Styling */
-    font-family: 'Nexa', sans-serif !important;
-    font-size: calc(clamp(1.2rem, 1.5vw, 2rem)); /* Maintains existing font-size */
-    line-height: 1; /* Ensures text is vertically centered */
-  
-    /* Text Color and Cursor */
-    color: #000000;
-    cursor: pointer;
-  
-    /* Glassmorphism Effect */
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
+    /* Updated Box Shadow */
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
   
     /* Transition for Smooth Hover Effect */
     transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-image 0.3s ease;
-  
-    /* Glow Drop Shadow */
-    box-shadow: 0 0 10px rgba(205, 15, 195, 0.6);
   
     /* Position Relative for Pseudo-element */
     position: relative;
@@ -282,39 +272,29 @@
     z-index: 1; /* Set higher than pseudo-element */
   }
   
-  /* Pseudo-element for Gradient Border */
-  .glass-button::before {
-    content: "";
-    position: absolute;
-    top: -2px; /* Adjust based on desired border width */
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    border-radius: inherit; /* Match the button's border-radius */
-    /* background: linear-gradient(135deg, #e0e0e0, #ffffff, #e0e0e0);  */
-    z-index: -1; /* Place behind the button */
-  }
-  
-  /* Hover State */
+  /* Updated Hover State */
   .glass-button:hover {
-    /* background: linear-gradient(135deg, rgba(255, 20, 146, 0.902), rgba(127, 11, 210, 0.9));  */
-  
     background: linear-gradient(217deg, rgba(255, 20, 146, 0.9), rgba(177, 233, 10, 0.8) 70.71%),
-    linear-gradient(127deg, rgba(114, 203, 12,0.9), rgba(114, 203, 12, 0.8) 70.71%),
-    linear-gradient(336deg, rgba(223, 227, 18, 0.8), rgba(212, 231, 6, 0.9) 70.71%);
-  
-    transform: translate(-50%, -50%) scale(1.05); /* Slight enlargement on hover */
-    box-shadow: 0 0 20px rgba(255, 20, 147, 0.8); 
+                linear-gradient(127deg, rgba(114, 203, 12,0.9), rgba(114, 203, 12, 0.8) 70.71%),
+                linear-gradient(336deg, rgba(223, 227, 18, 0.8), rgba(212, 231, 6, 0.9) 70.71%);
+    border-color: transparent; /* Remove white border on hover */
+    transform: translate(-50%, -50%) scale(1.05);
+    box-shadow: 0 0 20px rgba(255, 20, 147, 0.8);
+    color: #000000;
   }
   
+  /* Remove the pseudo-element since we're using a direct border now */
+  .glass-button::before {
+    display: none;
+  }
   
   /* Responsive Breakpoints */
   
   /* Mobile Devices (up to 480px) */
   @media (max-width: 480px) {
     .glass-button {
-      padding: calc(clamp(1.5vh, 1.2rem, 2vh)) 4vw calc(clamp(1vh, 1rem, 2vh)) 4vw; /* Top, Right, Bottom, Left */
-      font-size: calc(clamp(1.5rem, 4vw, 2.5rem));
+      padding: 1.4rem 1.5rem 1.4rem 1.5rem; /* Top, Right, Bottom, Left */
+      font-size: calc(clamp(1rem, 1.3rem, 2.5rem));
       /* border-radius: calc(clamp(1vw, 1.5vw, 2vw)); */
       min-width: 150px; /* Ensures the button doesn't get too small */
       max-width: 90%; /* Allows the button to take up most of the screen width */
@@ -324,8 +304,8 @@
   /* Small Tablets (481px - 768px) */
   @media (min-width: 481px) and (max-width: 768px) {
     .glass-button {
-      padding: calc(clamp(1.2vh, 1.5rem, 2vh)) 3vw calc(clamp(0.9vh, 1.1rem, 1.8vh)) 3vw; /* Top, Right, Bottom, Left */
-      font-size: calc(clamp(1.3rem, 3.5vw, 2.2rem));
+      padding: 1.4rem 1.5rem 1.4rem 1.5rem; /* Top, Right, Bottom, Left */
+      font-size: calc(clamp(1.1rem, 1.4rem, 2.5rem));
       /* border-radius: calc(clamp(0.8vw, 1.3vw, 1.8vw)); */
     }
   }
@@ -333,8 +313,8 @@
   /* Medium Tablets and Small Desktops (769px - 1024px) */
   @media (min-width: 769px) and (max-width: 1024px) {
     .glass-button {
-      padding: calc(clamp(1.0vh, 1.3rem, 1.8vh)) 2.5vw calc(clamp(0.7vh, 1rem, 1.5vh)) 2.5vw; /* Top, Right, Bottom, Left */
-      font-size: calc(clamp(1.1rem, 3vw, 2rem));
+      padding: 1.4rem 1.5rem 1.4rem 1.5rem; /* Top, Right, Bottom, Left */
+      font-size: calc(clamp(1.1rem, 3rem, 2rem));
       /* border-radius: calc(clamp(0.6vw, 1.2vw, 1.5vw)); */
     }
   }
@@ -342,8 +322,8 @@
   /* Large Desktops (1025px and above) */
   @media (min-width: 1025px) {
     .glass-button {
-      padding: calc(clamp(0.9vh, 1.2rem, 1.5vh)) 2vw calc(clamp(0.5vh, 0.8rem, 1.2vh)) 2vw; /* Top, Right, Bottom, Left */
-      font-size: calc(clamp(1.0rem, 2vw, 1.8rem));
+      padding: 1.4rem 1.5rem 1.4rem 1.5rem; /* Top, Right, Bottom, Left */
+      font-size: calc(clamp(1.0rem, 2rem, 1.8rem));
       /* border-radius: calc(clamp(0.5vw, 1vw, 1.2vw)); */
     }
   }
