@@ -188,6 +188,12 @@
       animation: App-logo-spin infinite 20s linear;
     }
   }
+
+  .canvas {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+  }
   
   .App-header {
     background-color: #282c34;

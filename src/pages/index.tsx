@@ -16,6 +16,20 @@ import AudioPlayer from '@/components/components/AudioPlayer';
 const shapes = ['heart', 'smiley', 'saturn'] as const;
 type ShapeType = (typeof shapes)[number];
 
+// Development flag - you can set this based on your environment
+const isDev = false
+
+// Default production values
+const DEFAULT_CONTROLS = {
+  trailLength: 16.2,
+  rainbowIntensity: 0.91,
+  noiseScale: 0.88,
+  noiseSpeed: 0.2,
+  spiralSpeed: 0.4,
+  spiralTightness: 0.9,
+  chaosAmount: 0.6,
+};
+
 const Home: React.FC = () => {
   // Fix the shape to "saturn" by setting a constant
   const fixedShape: ShapeType = 'saturn';
@@ -31,23 +45,18 @@ const Home: React.FC = () => {
     setShape(shapes[nextIndex]);
   };
 
-  const {
-    trailLength,
-    rainbowIntensity,
-    noiseScale,
-    noiseSpeed,
-    spiralSpeed,
-    spiralTightness,
-    chaosAmount,
-  } = useControls({
-    trailLength: { value: 16.2, min: 1, max: 20, step: 0.1 },
-    rainbowIntensity: { value: 0.91, min: 0, max: 1, step: 0.01 },
-    noiseScale: { value: 0.88, min: 0.01, max: 1, step: 0.01 },
-    noiseSpeed: { value: 0.2, min: 0, max: 2, step: 0.1 },
-    spiralSpeed: { value: 0.4, min: 0, max: 2, step: 0.1 },
-    spiralTightness: { value: 0.9, min: 0.1, max: 5, step: 0.1 },
-    chaosAmount: { value: 0.6, min: 0, max: 1, step: 0.01 },
-  });
+  // Use controls in development, default values in production
+  const controls = isDev
+    ? useControls({
+        trailLength: { value: DEFAULT_CONTROLS.trailLength, min: 1, max: 20, step: 0.1 },
+        rainbowIntensity: { value: DEFAULT_CONTROLS.rainbowIntensity, min: 0, max: 1, step: 0.01 },
+        noiseScale: { value: DEFAULT_CONTROLS.noiseScale, min: 0.01, max: 1, step: 0.01 },
+        noiseSpeed: { value: DEFAULT_CONTROLS.noiseSpeed, min: 0, max: 2, step: 0.1 },
+        spiralSpeed: { value: DEFAULT_CONTROLS.spiralSpeed, min: 0, max: 2, step: 0.1 },
+        spiralTightness: { value: DEFAULT_CONTROLS.spiralTightness, min: 0.1, max: 5, step: 0.1 },
+        chaosAmount: { value: DEFAULT_CONTROLS.chaosAmount, min: 0, max: 1, step: 0.01 },
+      })
+    : DEFAULT_CONTROLS;
 
   // References for lights to attach helpers
   const directionalLightRef = useRef<THREE.DirectionalLight>(null);
@@ -56,7 +65,7 @@ const Home: React.FC = () => {
 
   return (
     <div className="App">
-      <Leva />
+      {isDev && <Leva collapsed={true} />}
       {/* Audio Player anchored at the bottom */}
       <AudioPlayer />
 
@@ -70,6 +79,7 @@ const Home: React.FC = () => {
       </button>
 
       <Canvas
+        className="canvas"
         onClick={handleCanvasClick}
         shadows
         gl={{
@@ -119,13 +129,13 @@ const Home: React.FC = () => {
           speed={1}
         />
         <ParticleSwarm
-          trailLength={trailLength}
-          rainbowIntensity={rainbowIntensity}
-          noiseScale={noiseScale}
-          noiseSpeed={noiseSpeed}
-          spiralSpeed={spiralSpeed}
-          spiralTightness={spiralTightness}
-          chaosAmount={chaosAmount}
+          trailLength={controls.trailLength}
+          rainbowIntensity={controls.rainbowIntensity}
+          noiseScale={controls.noiseScale}
+          noiseSpeed={controls.noiseSpeed}
+          spiralSpeed={controls.spiralSpeed}
+          spiralTightness={controls.spiralTightness}
+          chaosAmount={controls.chaosAmount}
         />
         {/* <PointCloudTest /> */}
         <PointCloud shape={shape} pointCount={500} scale={5} />
@@ -133,7 +143,7 @@ const Home: React.FC = () => {
         <EffectComposer>
           <Bloom
             luminanceThreshold={0.4}
-            luminanceSmoothing={0.3}
+            luminanceSmoothing={0.3} 
             intensity={1.0}
             height={300}
           />

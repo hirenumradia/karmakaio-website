@@ -15,6 +15,8 @@ import { useAudioContext } from 'src/components/context/AudioContext';
 import { useShaderDebugControls } from 'src/components/3d/DebugControls';
 // import { updateNormalizedMix } from "src/components/utils/3d";
 
+const SHOW_DEBUG_CONTROLS = false; // Set to true when debugging is needed
+
 interface PointCloudProps {
   shape: 'heart' | 'smiley' | 'saturn';
   pointCount?: number;
@@ -40,7 +42,7 @@ export const PointCloud: React.FC<PointCloudProps> = ({
   const { camera, clock } = useThree();
 
   const { amplitude, isPlaying, isPlayingTransitionedTo } = useAudioContext();
-  const debugControls = useShaderDebugControls();
+  const debugControls = SHOW_DEBUG_CONTROLS ? useShaderDebugControls() : { showDebug: false };
 
   // Define variables for displacement (modifiable for tweaking)
   const displacementScale = useRef(1.0); // Base scale for displacement

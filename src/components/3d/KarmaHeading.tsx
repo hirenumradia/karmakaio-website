@@ -168,11 +168,12 @@ const KarmaHeading: React.FC = () => {
   useEffect(() => {
     if (textMeshRef.current) {
       // Adjust the scale based on the viewport size
-      const { width, height } = size;
-      const minDimension = Math.min(width, height);
+      const { width } = size;
+      const minDimension = Math.min(width);
 
-      // Example scaling logic (adjust the multiplier as needed)
-      const scaleFactor = minDimension / 800; // 800 is an arbitrary base size
+      // Set a maximum scale factor
+      const maxScaleFactor = 2; // Adjust this value as needed
+      const scaleFactor = Math.min(minDimension / 525, maxScaleFactor); // 800 is an arbitrary base size
 
       textMeshRef.current.scale.set(scaleFactor, scaleFactor, scaleFactor);
     }
