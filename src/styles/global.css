@@ -1,0 +1,343 @@
+@font-face {
+    font-family: 'Nexa';
+    src: url('/assets/fonts/NexaBold.woff2') format('woff2'),
+        url('/assets/fonts/NexaBold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: 'Nexa';
+    src: url('/assets/fonts/NexaLight.woff2') format('woff2'),
+        url('/assets/fonts/NexaLight.woff') format('woff');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: 'Nexa';
+    src: url('/assets/fonts/Nexa-LightItalic.woff2') format('woff2'),
+        url('/assets/fonts/Nexa-LightItalic.woff') format('woff');
+    font-weight: 300;
+    font-style: italic;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: 'Nexa';
+    src: url('/assets/fonts/Nexa-Heavy.woff2') format('woff2'),
+        url('/assets/fonts/Nexa-Heavy.woff') format('woff');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: 'Nexa';
+    src: url('/assets/fonts/Nexa-Light.woff2') format('woff2'),
+        url('/assets/fonts/Nexa-Light.woff') format('woff');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: 'Nexa';
+    src: url('/assets/fonts/Nexa-Bold.woff2') format('woff2'),
+        url('/assets/fonts/Nexa-Bold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: 'Nexa';
+    src: url('/assets/fonts/Nexa-Thin.woff2') format('woff2'),
+        url('/assets/fonts/Nexa-Thin.woff') format('woff');
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: 'Nexa';
+    src: url('/assets/fonts/Nexa-RegularItalic.woff2') format('woff2'),
+        url('/assets/fonts/Nexa-RegularItalic.woff') format('woff');
+    font-weight: normal;
+    font-style: italic;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: 'Nexa';
+    src: url('/assets/fonts/Nexa-HeavyItalic.woff2') format('woff2'),
+        url('/assets/fonts/Nexa-HeavyItalic.woff') format('woff');
+    font-weight: 900;
+    font-style: italic;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: 'Nexa';
+    src: url('/assets/fonts/Nexa-Black.woff2') format('woff2'),
+        url('/assets/fonts/Nexa-Black.woff') format('woff');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: 'Nexa';
+    src: url('/assets/fonts/Nexa-ThinItalic.woff2') format('woff2'),
+        url('/assets/fonts/Nexa-ThinItalic.woff') format('woff');
+    font-weight: 100;
+    font-style: italic;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: 'Nexa';
+    src: url('/assets/fonts/Nexa-BookItalic.woff2') format('woff2'),
+        url('/assets/fonts/Nexa-BookItalic.woff') format('woff');
+    font-weight: normal;
+    font-style: italic;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: 'Nexa';
+    src: url('/assets/fonts/Nexa-BlackItalic.woff2') format('woff2'),
+        url('/assets/fonts/Nexa-BlackItalic.woff') format('woff');
+    font-weight: 900;
+    font-style: italic;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: 'Nexa';
+    src: url('/assets/fonts/Nexa-BoldItalic.woff2') format('woff2'),
+        url('/assets/fonts/Nexa-BoldItalic.woff') format('woff');
+    font-weight: bold;
+    font-style: italic;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: 'Nexa';
+    src: url('/assets/fonts/Nexa-Regular.woff2') format('woff2'),
+        url('/assets/fonts/Nexa-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: 'Nexa';
+    src: url('/assets/fonts/Nexa-Book.woff2') format('woff2'),
+        url('/assets/fonts/Nexa-Book.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: 'Nexa';
+    src: url('/assets/fonts/Nexa-XBoldItalic.woff2') format('woff2'),
+        url('/assets/fonts/Nexa-XBoldItalic.woff') format('woff');
+    font-weight: bold;
+    font-style: italic;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: 'Nexa';
+    src: url('/assets/fonts/Nexa-XBold.woff2') format('woff2'),
+        url('/assets/fonts/Nexa-XBold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  body {
+    font-family: Nexa, sans-serif !important;
+    font-weight: 300;
+    font-style: normal;
+    margin: 0;
+    background: black;
+  }
+  
+  .App {
+    text-align: center;
+    min-height: 100vh;
+    position: absolute;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    top:0;
+  }
+  
+  .App-logo {
+    height: 40vmin;
+    pointer-events: none;
+  }
+  
+  @media (prefers-reduced-motion: no-preference) {
+    .App-logo {
+      animation: App-logo-spin infinite 20s linear;
+    }
+  }
+  
+  .App-header {
+    background-color: #282c34;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(10px + 2vmin);
+    color: white;
+  }
+  
+  .App-link {
+    color: #61dafb;
+  }
+  
+  @keyframes App-logo-spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .galaxyCanvas {
+    background-color: #000000;
+    min-height: 100vh;
+    display: flex;
+  }
+  
+  /* Global Box Sizing */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  
+  /* Glass-like Button */
+  .glass-button {
+    position: absolute;
+    top: 65%; /* Centers vertically within the parent */
+    left: 50%; /* Centers horizontally within the parent */
+    transform: translate(-50%, -50%); /* Adjusts for the button's own dimensions */
+  
+    /* Flexbox for centering content */
+    display: flex;
+    align-items: center; /* Vertically centers the text */
+    justify-content: center; /* Horizontally centers the text */
+  
+    /* Responsive Padding using calc(clamp(...)) */
+    padding: calc(clamp(1.0vw, 1.4rem, 3vw)) 2vw calc(clamp(0.8vw, 1.2rem, 2.5vw)) 2vw; /* Top, Right, Bottom, Left */
+  
+    /* Background */
+    background: linear-gradient(135deg, rgba(205, 15, 195, 0.9), rgba(96, 12, 156, 0.9)); /* Semi-transparent hot pink to purple gradient */
+  
+    background: linear-gradient(217deg, rgba(205, 15, 195, 1), rgba(133, 7, 223, 0.1) 90.71%),
+    linear-gradient(336deg, rgba(5, 236, 5, 0.8), rgba(212, 231, 6, 0.9) 70.71%);
+  
+    /* Border Radius */
+    border-radius: 0.1em; /* Maintains existing border-radius */
+  
+    border: 1px solid #410f38;
+  
+    /* Font Styling */
+    font-family: 'Nexa', sans-serif !important;
+    font-size: calc(clamp(1.2rem, 1.5vw, 2rem)); /* Maintains existing font-size */
+    line-height: 1; /* Ensures text is vertically centered */
+  
+    /* Text Color and Cursor */
+    color: #000000;
+    cursor: pointer;
+  
+    /* Glassmorphism Effect */
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+  
+    /* Transition for Smooth Hover Effect */
+    transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-image 0.3s ease;
+  
+    /* Glow Drop Shadow */
+    box-shadow: 0 0 10px rgba(205, 15, 195, 0.6);
+  
+    /* Position Relative for Pseudo-element */
+    position: relative;
+  
+    /* Ensure the button stays above other elements */
+    z-index: 1; /* Set higher than pseudo-element */
+  }
+  
+  /* Pseudo-element for Gradient Border */
+  .glass-button::before {
+    content: "";
+    position: absolute;
+    top: -2px; /* Adjust based on desired border width */
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: inherit; /* Match the button's border-radius */
+    /* background: linear-gradient(135deg, #e0e0e0, #ffffff, #e0e0e0);  */
+    z-index: -1; /* Place behind the button */
+  }
+  
+  /* Hover State */
+  .glass-button:hover {
+    /* background: linear-gradient(135deg, rgba(255, 20, 146, 0.902), rgba(127, 11, 210, 0.9));  */
+  
+    background: linear-gradient(217deg, rgba(255, 20, 146, 0.9), rgba(177, 233, 10, 0.8) 70.71%),
+    linear-gradient(127deg, rgba(114, 203, 12,0.9), rgba(114, 203, 12, 0.8) 70.71%),
+    linear-gradient(336deg, rgba(223, 227, 18, 0.8), rgba(212, 231, 6, 0.9) 70.71%);
+  
+    transform: translate(-50%, -50%) scale(1.05); /* Slight enlargement on hover */
+    box-shadow: 0 0 20px rgba(255, 20, 147, 0.8); 
+  }
+  
+  
+  /* Responsive Breakpoints */
+  
+  /* Mobile Devices (up to 480px) */
+  @media (max-width: 480px) {
+    .glass-button {
+      padding: calc(clamp(1.5vh, 1.2rem, 2vh)) 4vw calc(clamp(1vh, 1rem, 2vh)) 4vw; /* Top, Right, Bottom, Left */
+      font-size: calc(clamp(1.5rem, 4vw, 2.5rem));
+      /* border-radius: calc(clamp(1vw, 1.5vw, 2vw)); */
+      min-width: 150px; /* Ensures the button doesn't get too small */
+      max-width: 90%; /* Allows the button to take up most of the screen width */
+    }
+  }
+  
+  /* Small Tablets (481px - 768px) */
+  @media (min-width: 481px) and (max-width: 768px) {
+    .glass-button {
+      padding: calc(clamp(1.2vh, 1.5rem, 2vh)) 3vw calc(clamp(0.9vh, 1.1rem, 1.8vh)) 3vw; /* Top, Right, Bottom, Left */
+      font-size: calc(clamp(1.3rem, 3.5vw, 2.2rem));
+      /* border-radius: calc(clamp(0.8vw, 1.3vw, 1.8vw)); */
+    }
+  }
+  
+  /* Medium Tablets and Small Desktops (769px - 1024px) */
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .glass-button {
+      padding: calc(clamp(1.0vh, 1.3rem, 1.8vh)) 2.5vw calc(clamp(0.7vh, 1rem, 1.5vh)) 2.5vw; /* Top, Right, Bottom, Left */
+      font-size: calc(clamp(1.1rem, 3vw, 2rem));
+      /* border-radius: calc(clamp(0.6vw, 1.2vw, 1.5vw)); */
+    }
+  }
+  
+  /* Large Desktops (1025px and above) */
+  @media (min-width: 1025px) {
+    .glass-button {
+      padding: calc(clamp(0.9vh, 1.2rem, 1.5vh)) 2vw calc(clamp(0.5vh, 0.8rem, 1.2vh)) 2vw; /* Top, Right, Bottom, Left */
+      font-size: calc(clamp(1.0rem, 2vw, 1.8rem));
+      /* border-radius: calc(clamp(0.5vw, 1vw, 1.2vw)); */
+    }
+  }

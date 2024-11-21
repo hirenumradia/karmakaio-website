@@ -1,36 +1,51 @@
 {
-  "name": "karmakaio",
+  "name": "karmakaio-website-next",
   "version": "0.1.0",
   "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
   "dependencies": {
-    "@react-three/drei": "^9.112.0",
-    "@react-three/fiber": "^8.17.7",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "next": "15.0.3",
+    "@react-three/drei": "^9.117.3",
+    "@react-three/fiber": "^8.17.10",
     "@react-three/postprocessing": "^2.16.2",
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@tweenjs/tween.js": "^25.0.0",
-    "@types/dat.gui": "^0.7.9",
-    "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.24",
-    "@types/react": "^18.0.37",
-    "@types/react-dom": "^18.0.11",
-    "@types/three": "^0.168.0",
     "glsl-noise": "^0.0.0",
     "kd-tree-javascript": "^1.0.3",
     "postprocessing": "^6.36.2",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
     "three": "^0.168.0",
-    "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
-  "scripts": {
-    "start": "react-app-rewired start",
-    "build": "react-app-rewired build",
-    "test": "react-app-rewired test",
-    "eject": "react-scripts eject"
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "eslint": "^8",
+    "eslint-config-next": "15.0.3",
+    "@tweenjs/tween.js": "^25.0.0",
+    "@types/dat.gui": "^0.7.9",
+    "@types/jest": "^27.5.2",
+    "@types/three": "^0.170.0",
+    "@babel/core": "^7.25.2",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@babel/preset-env": "^7.25.4",
+    "@babel/preset-react": "^7.25.9",
+    "@types/kd-tree-javascript": "^1.0.3",
+    "babel-loader": "^9.2.1",
+    "babel-plugin-glsl": "^1.0.0",
+    "babel-plugin-macros": "^3.1.0",
+    "glslify": "^7.1.1",
+    "glslify-loader": "^2.0.0",
+    "leva": "^0.9.35",
+    "raw-loader": "^4.0.2"
   },
   "eslintConfig": {
     "extends": [
@@ -49,20 +64,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "@babel/core": "^7.25.2",
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@babel/preset-env": "^7.25.4",
-    "@babel/preset-react": "^7.24.7",
-    "@types/kd-tree-javascript": "^1.0.3",
-    "babel-loader": "^9.2.1",
-    "babel-plugin-glsl": "^1.0.0",
-    "babel-plugin-macros": "^3.1.0",
-    "glslify": "^7.1.1",
-    "glslify-loader": "^2.0.0",
-    "leva": "^0.9.35",
-    "raw-loader": "^4.0.2",
-    "react-app-rewired": "^2.2.1"
   }
 }

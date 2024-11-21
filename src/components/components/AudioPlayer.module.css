@@ -1,0 +1,116 @@
+/* AudioPlayer.module.css */
+.audioPlayer {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 15px;
+    padding: 10px 20px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    max-width: 500px;
+    z-index: 1000;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.buttonGroup {
+    display: flex;
+    gap: 10px;
+}
+
+.playPauseButton,
+.prevButton,
+.nextButton {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 24px;
+    cursor: pointer;
+    height: 40px;
+    width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 40px;
+    transition: color 0.3s ease;
+}
+
+.playPauseButton:hover,
+.prevButton:hover,
+.nextButton:hover {
+    color: #ff4081;
+}
+
+.audioFilename {
+    color: #ffffff;
+    font-size: 16px;
+    margin: 0;
+    padding: 0;
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: visible;
+    min-width: 0;
+}
+
+.marqueeContainer {
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.marqueeText {
+    display: inline-block;
+    padding-right: 50px;
+    animation: marquee 20s linear infinite;
+}
+
+.marqueeText::after {
+    content: attr(data-text);
+    padding-left: 50px;
+}
+
+@keyframes marquee {
+    0% {
+        transform: translateX(100%);
+    }
+    100% {
+        transform: translateX(-150%);
+    }
+}
+
+@media (max-width: 600px) {
+    .audioPlayer {
+        padding: 8px 16px;
+        gap: 10px;
+        width: 90%;
+        max-width: 400px;
+    }
+
+    .audioFilename {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 400px) {
+    .audioPlayer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .audioFilename {
+        width: 100%;
+        text-align: center;
+    }
+}
