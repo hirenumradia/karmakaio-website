@@ -73,9 +73,9 @@ const Home: React.FC = () => {
       <button
         className="glass-button"
         onClick={() => window.open('https://linktr.ee/karmakaio', '_blank')}
-        aria-label="OPEN"
+        aria-label="ENTER"
       >
-        OPEN
+        ENTER
       </button>
 
       <Canvas
