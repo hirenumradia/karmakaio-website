@@ -1,6 +1,6 @@
 // src/components/3d/Shapes.ts
 
-import * as THREE from "three";
+import * as THREE from 'three';
 
 export const generateHeartShape = (pointCount: number): Float32Array => {
   const positions = new Float32Array(pointCount * 3);

@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect } from "react";
-import "./AudioPlayer.module.css"; // Import the associated CSS
+import React, { useRef, useState, useEffect } from 'react';
+import './AudioPlayer.module.css'; // Import the associated CSS
 
 interface Song {
   src: string;
@@ -14,16 +14,16 @@ const AudioPlayer: React.FC = () => {
   // Define the playlist
   const playlist: Song[] = [
     {
-      src: "/assets/music/Karmakaio_Sigurd_K_Where_U_Been_Original_Mix.mp3",
-      title: "Karmakaio & Sigurd K - Where U Been (Original Mix)",
+      src: '/assets/music/Karmakaio_Sigurd_K_Where_U_Been_Original_Mix.mp3',
+      title: 'Karmakaio & Sigurd K - Where U Been (Original Mix)',
     },
     {
-      src: "/assets/music/Lil_Tecca_500lbs_More_Karmakaio_Remix.mp3",
-      title: "Lil Tecca - 500lbs (More & Karmakaio Remix)",
+      src: '/assets/music/Lil_Tecca_500lbs_More_Karmakaio_Remix.mp3',
+      title: 'Lil Tecca - 500lbs (More & Karmakaio Remix)',
     },
     {
-      src: "/assets/music/Ye_Ty_Dolla_Sign_Vultures_feat_Bump_J_Lil_Durk_Vultures_Karmakaio_Remix.mp3",
-      title: "¥$, Ye, Ty Dolla $ign - Vultures feat. Bump J & Lil Durk - Vultures (Karmakaio Remix)",
+      src: '/assets/music/Ye_Ty_Dolla_Sign_Vultures_feat_Bump_J_Lil_Durk_Vultures_Karmakaio_Remix.mp3',
+      title: '¥$, Ye, Ty Dolla $ign - Vultures feat. Bump J & Lil Durk - Vultures (Karmakaio Remix)',
     },
     // Add more songs as needed
   ];
@@ -34,7 +34,7 @@ const AudioPlayer: React.FC = () => {
   const getFilenameWithoutExtension = (path: string): string => {
     const parts = path.split('/');
     const filename = parts[parts.length - 1];
-    return filename.replace(/\.[^/.]+$/, ""); // Removes the extension
+    return filename.replace(/\.[^/.]+$/, ''); // Removes the extension
   };
 
   const filename = currentSong.title;
@@ -54,7 +54,7 @@ const AudioPlayer: React.FC = () => {
           })
           .catch((error) => {
             // Automatic playback failed.
-            console.error("Playback error:", error);
+            console.error('Playback error:', error);
           });
       }
     }
@@ -78,7 +78,7 @@ const AudioPlayer: React.FC = () => {
         })
         .catch((error) => {
           // Automatic playback failed.
-          console.error("Playback error:", error);
+          console.error('Playback error:', error);
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -115,9 +115,9 @@ const AudioPlayer: React.FC = () => {
         <button
           className="play-pause-button"
           onClick={togglePlayPause}
-          aria-label={isPlaying ? "Pause audio" : "Play audio"}
+          aria-label={isPlaying ? 'Pause audio' : 'Play audio'}
         >
-          {isPlaying ? "❚❚" : "►"}
+          {isPlaying ? '❚❚' : '►'}
         </button>
 
         <button

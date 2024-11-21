@@ -1,8 +1,8 @@
 // src/components/3d/ShaderDebugger.tsx
 
-import { useFrame } from "@react-three/fiber";
-import { useEffect, useRef } from "react";
-import { ShaderMaterial } from "three";
+import { useFrame } from '@react-three/fiber';
+import { useEffect, useRef } from 'react';
+import { ShaderMaterial } from 'three';
 
 interface DebugValues {
   // Amplitude
@@ -48,10 +48,10 @@ export const ShaderDebugger = ({ material }: { material: React.MutableRefObject<
           
       // Determine frequency range based on amplitude
       const freqRange = amp < 0.33 
-        ? "LOW (green->cyan)" 
+        ? 'LOW (green->cyan)' 
         : amp < 0.66 
-          ? "MID (cyan->pink)" 
-          : "HIGH (pink->white)";
+          ? 'MID (cyan->pink)' 
+          : 'HIGH (pink->white)';
           
       // Calculate final colors based on shader logic
       const lowColor = [0.0, 1.0, 0.4];

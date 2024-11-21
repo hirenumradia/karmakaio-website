@@ -1,11 +1,11 @@
 // src/components/3d/PointCloudTest.tsx
 
-import React, { useRef } from "react";
-import { useFrame } from "@react-three/fiber";
-import * as THREE from "three";
-import "src/components/3d/ShadersTest"; // Ensure ColorShaderMaterial is extended
-import { useAudioContext } from "src/components/context/AudioContext"; // Import your Audio Context
-import { updateNormalizedMix } from "src/components/utils/3d";
+import React, { useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
+import 'src/components/3d/ShadersTest'; // Ensure ColorShaderMaterial is extended
+import { useAudioContext } from 'src/components/context/AudioContext'; // Import your Audio Context
+import { updateNormalizedMix } from 'src/components/utils/3d';
 
 const PointCloudTest: React.FC = () => {
   // Typed ref for the shader material

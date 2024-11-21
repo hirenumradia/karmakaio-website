@@ -9,8 +9,8 @@ interface AudioContextType {
   setIsPlayingTransitionedTo: (value: {from: boolean, to: boolean}) => void;
   isPlaying: boolean;
   isPlayingTransitionedTo: {
-    "from": boolean,
-    "to": boolean
+    'from': boolean,
+    'to': boolean
   }
 
 }
@@ -24,8 +24,8 @@ const AudioContext = createContext<AudioContextType>({
   setIsPlayingTransitionedTo: () => {},
   isPlaying: false,
   isPlayingTransitionedTo: {
-    "from": false,
-    "to": false
+    'from': false,
+    'to': false
   }
 });
 
@@ -36,14 +36,14 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [frequencies, setFrequencies] = useState<Float32Array>(new Float32Array());
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPlayingTransitionedTo, setIsPlayingTransitionedTo] = useState({
-    "from": false,
-    "to": false
+    'from': false,
+    'to': false
   });
 
   const handlePlayPause = (playing: boolean) => {
     setIsPlayingTransitionedTo({
-      "from": isPlaying,
-      "to": playing
+      'from': isPlaying,
+      'to': playing
     })
     setIsPlaying(playing);
     setAmplitude(playing ? amplitude : 0);

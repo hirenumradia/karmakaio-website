@@ -1,22 +1,22 @@
 // src/components/3d/PointCloud.tsx
 
-import React, { useMemo, useRef, useEffect, useState } from "react";
-import { useFrame, useThree } from "@react-three/fiber";
-import * as THREE from "three";
-import { PointMaterial, LineMaterial } from "./Shaders";
+import React, { useMemo, useRef, useEffect, useState } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
+import * as THREE from 'three';
+import { PointMaterial, LineMaterial } from './Shaders';
 import {
   generateHeartShape,
   generateSmileyShape,
   generateSaturnShape,
-} from "./Shapes";
-import { kdTree } from "kd-tree-javascript";
-import { useAudioContext } from "src/components/context/AudioContext";
+} from './Shapes';
+import { kdTree } from 'kd-tree-javascript';
+import { useAudioContext } from 'src/components/context/AudioContext';
 // import { ShaderDebugger } from "src/components/3d/ShaderDebugger";
-import { useShaderDebugControls } from "src/components/3d/DebugControls";
+import { useShaderDebugControls } from 'src/components/3d/DebugControls';
 // import { updateNormalizedMix } from "src/components/utils/3d";
 
 interface PointCloudProps {
-  shape: "heart" | "smiley" | "saturn";
+  shape: 'heart' | 'smiley' | 'saturn';
   pointCount?: number;
   scale?: number;
 }
@@ -63,13 +63,13 @@ export const PointCloud: React.FC<PointCloudProps> = ({
   const initialShape = useMemo(() => {
     let positions: Float32Array;
     switch (shape) {
-      case "heart":
+      case 'heart':
         positions = generateHeartShape(pointCount);
         break;
-      case "smiley":
+      case 'smiley':
         positions = generateSmileyShape(pointCount);
         break;
-      case "saturn":
+      case 'saturn':
       default:
         positions = generateSaturnShape(pointCount);
         break;
@@ -107,12 +107,12 @@ export const PointCloud: React.FC<PointCloudProps> = ({
     if (!positionsRef.current) {
       const geometry = new THREE.BufferGeometry();
       geometry.setAttribute(
-        "position",
+        'position',
         new THREE.BufferAttribute(initialShape, 3).setUsage(
           THREE.DynamicDrawUsage
         )
       );
-      positionsRef.current = geometry.getAttribute("position") as THREE.BufferAttribute;
+      positionsRef.current = geometry.getAttribute('position') as THREE.BufferAttribute;
     } else {
       positionsRef.current.array = initialShape;
       positionsRef.current.needsUpdate = true;
@@ -142,7 +142,7 @@ export const PointCloud: React.FC<PointCloudProps> = ({
         );
       };
 
-      const tree = new kdTree(points, distance, ["x", "y", "z"]);
+      const tree = new kdTree(points, distance, ['x', 'y', 'z']);
       const indices: number[] = [];
       
       points.forEach((point) => {
@@ -168,7 +168,7 @@ export const PointCloud: React.FC<PointCloudProps> = ({
     if (!lineGeometryRef.current) {
       const geometry = new THREE.BufferGeometry();
       geometry.setAttribute(
-        "position",
+        'position',
         new THREE.BufferAttribute(linePositions, 3).setUsage(THREE.DynamicDrawUsage)
       );
       lineGeometryRef.current = geometry;
@@ -228,7 +228,7 @@ export const PointCloud: React.FC<PointCloudProps> = ({
     }
 
     // Update line positions using interpolated positions
-    const linePositions = lineGeometryRef.current.getAttribute("position").array as Float32Array;
+    const linePositions = lineGeometryRef.current.getAttribute('position').array as Float32Array;
     neighborIndicesRef.current.forEach((pointIndex, i) => {
       const posIndex = pointIndex * 3;
       const lineIndex = i * 3;
@@ -238,7 +238,7 @@ export const PointCloud: React.FC<PointCloudProps> = ({
     });
 
     // Update geometry
-    lineGeometryRef.current.getAttribute("position").needsUpdate = true;
+    lineGeometryRef.current.getAttribute('position').needsUpdate = true;
 
     // Update material uniforms directly in useFrame
     if (lineMaterialRef.current?.uniforms) {

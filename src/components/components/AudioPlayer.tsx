@@ -1,6 +1,6 @@
-import React, { useRef, useState, useEffect, useCallback, ChangeEvent } from "react";
-import styles from "./AudioPlayer.module.css";
-import { useAudioContext } from "src/components/context/AudioContext";
+import React, { useRef, useState, useEffect, useCallback, ChangeEvent } from 'react';
+import styles from './AudioPlayer.module.css';
+import { useAudioContext } from 'src/components/context/AudioContext';
 import localFont from 'next/font/local'
 
 // const NexaRegularFont = localFont({ src: '../fonts/NexaRegular.woff2' })
@@ -41,16 +41,16 @@ const AudioPlayer: React.FC = () => {
   // Define the playlist
   const playlist: Song[] = [
     {
-      src: "/assets/music/Karmakaio_Sigurd_K_Where_U_Been_Original_Mix.mp3",
-      title: "Karmakaio & Sigurd K - Where U Been (Original Mix)",
+      src: '/assets/music/Karmakaio_Sigurd_K_Where_U_Been_Original_Mix.mp3',
+      title: 'Karmakaio & Sigurd K - Where U Been (Original Mix)',
     },
     {
-      src: "/assets/music/Lil_Tecca_500lbs_More_Karmakaio_Remix.mp3",
-      title: "Lil Tecca - 500lbs (More & Karmakaio Remix)",
+      src: '/assets/music/Lil_Tecca_500lbs_More_Karmakaio_Remix.mp3',
+      title: 'Lil Tecca - 500lbs (More & Karmakaio Remix)',
     },
     {
-      src: "/assets/music/Ye_Ty_Dolla_Sign_Vultures_feat_Bump_J_Lil_Durk_Vultures_Karmakaio_Remix.mp3",
-      title: "¥$, Ye, Ty Dolla $ign - Vultures feat. Bump J & Lil Durk - Vultures (Karmakaio Remix)",
+      src: '/assets/music/Ye_Ty_Dolla_Sign_Vultures_feat_Bump_J_Lil_Durk_Vultures_Karmakaio_Remix.mp3',
+      title: '¥$, Ye, Ty Dolla $ign - Vultures feat. Bump J & Lil Durk - Vultures (Karmakaio Remix)',
     },
     // Add more songs as needed
   ];
@@ -61,7 +61,7 @@ const AudioPlayer: React.FC = () => {
   const getFilenameWithoutExtension = (path: string): string => {
     const parts = path.split('/');
     const filename = parts[parts.length - 1];
-    return filename.replace(/\.[^/.]+$/, ""); // Removes the extension
+    return filename.replace(/\.[^/.]+$/, ''); // Removes the extension
   };
 
   const filename = getFilenameWithoutExtension(currentSong.src);
@@ -84,22 +84,22 @@ const AudioPlayer: React.FC = () => {
 
     const handleDetailedError = () => {
       if (audio.error) {
-        console.error("Audio error code:", audio.error.code);
+        console.error('Audio error code:', audio.error.code);
         switch (audio.error.code) {
           case audio.error.MEDIA_ERR_ABORTED:
-            console.error("You aborted the media playback.");
+            console.error('You aborted the media playback.');
             break;
           case audio.error.MEDIA_ERR_NETWORK:
-            console.error("A network error caused the media download to fail.");
+            console.error('A network error caused the media download to fail.');
             break;
           case audio.error.MEDIA_ERR_DECODE:
-            console.error("The media playback was aborted due to a corruption problem or because the media used features your browser did not support.");
+            console.error('The media playback was aborted due to a corruption problem or because the media used features your browser did not support.');
             break;
           case audio.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
-            console.error("The media could not be loaded, either because the server or network failed or because the format is not supported.");
+            console.error('The media could not be loaded, either because the server or network failed or because the format is not supported.');
             break;
           default:
-            console.error("An unknown media error occurred.");
+            console.error('An unknown media error occurred.');
             break;
         }
       }
@@ -123,21 +123,21 @@ const AudioPlayer: React.FC = () => {
       !audioContextRef.current ||
       audioContextRef.current.state !== 'running'
     ) {
-      console.log("AnalyserNode or AudioContext not ready.");
+      console.log('AnalyserNode or AudioContext not ready.');
       animationFrameRef.current = requestAnimationFrame(updateAmplitude);
       return;
     }
 
-    debug && console.log("AnalyserNode and DataArray ready.");
-    debug && console.log("AnalyserNode:", analyserNodeRef.current);
-    debug && console.log("DataArray:", dataArrayRef.current);
-    debug && console.log("AudioContext:", audioContextRef.current);
-    debug && console.log("AudioContext state:", audioContextRef.current?.state);
-    debug && console.log("AudioContext destination:", audioContextRef.current?.destination);
-    debug && console.log("Audio element:", audioRef.current);
-    debug && console.log("Audio element volume:", audioRef.current?.volume);
-    debug && console.log("Audio element currentTime:", audioRef.current?.currentTime);
-    debug && console.log("Audio element paused:", audioRef.current?.paused);
+    debug && console.log('AnalyserNode and DataArray ready.');
+    debug && console.log('AnalyserNode:', analyserNodeRef.current);
+    debug && console.log('DataArray:', dataArrayRef.current);
+    debug && console.log('AudioContext:', audioContextRef.current);
+    debug && console.log('AudioContext state:', audioContextRef.current?.state);
+    debug && console.log('AudioContext destination:', audioContextRef.current?.destination);
+    debug && console.log('Audio element:', audioRef.current);
+    debug && console.log('Audio element volume:', audioRef.current?.volume);
+    debug && console.log('Audio element currentTime:', audioRef.current?.currentTime);
+    debug && console.log('Audio element paused:', audioRef.current?.paused);
 
     analyserNodeRef.current.getByteFrequencyData(dataArrayRef.current);
 
@@ -145,7 +145,7 @@ const AudioPlayer: React.FC = () => {
     const isSilent = dataArrayRef.current.every(value => value === 0);
 
     if (isSilent) {
-      console.warn("AnalyserNode is receiving silent data.");
+      console.warn('AnalyserNode is receiving silent data.');
     }
 
     // Get frequency data
@@ -177,14 +177,14 @@ const AudioPlayer: React.FC = () => {
 
     const finalAmplitude = Math.min(scaledAmplitude, 1);
 
-    debug && console.log("Raw Average:", average);
-    debug && console.log("Normalized Amplitude:", normalizedAmplitude);
-    debug && console.log("Scaled Amplitude:", scaledAmplitude);
-    debug && console.log("Final Amplitude:", finalAmplitude);
+    debug && console.log('Raw Average:', average);
+    debug && console.log('Normalized Amplitude:', normalizedAmplitude);
+    debug && console.log('Scaled Amplitude:', scaledAmplitude);
+    debug && console.log('Final Amplitude:', finalAmplitude);
 
     setAmplitudeRef.current(finalAmplitude);
 
-    debug && console.log("Is it playing:", isPlayingRef.current);
+    debug && console.log('Is it playing:', isPlayingRef.current);
 
     if (isPlayingRef.current) {
       animationFrameRef.current = requestAnimationFrame(updateAmplitude);
@@ -203,69 +203,69 @@ const AudioPlayer: React.FC = () => {
 
       if (audioContextRef.current && audioContextRef.current.state === 'running') {
         audioContextRef.current.suspend().then(() => {
-          debug && console.log("AudioContext suspended.");
+          debug && console.log('AudioContext suspended.');
         }).catch(error => {
-          debug && console.error("Error suspending AudioContext:", error);
+          debug && console.error('Error suspending AudioContext:', error);
         });
       }
       if (animationFrameRef.current) {
-        debug && console.log("Cancelling animation frame.");
+        debug && console.log('Cancelling animation frame.');
         cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;
       }
       setIsPlaying(false);
     } else {
-      debug && console.log("Playing audio.");
+      debug && console.log('Playing audio.');
       // Initialize AudioContext if not already
       if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
-        debug && console.log("Initializing AudioContext.");
+        debug && console.log('Initializing AudioContext.');
         audioContextRef.current = new window.AudioContext();
        
         try {
           if (audioContextRef.current && audioRef.current) {
-            debug && console.log("AudioContext and audioRef.current initialized.");
+            debug && console.log('AudioContext and audioRef.current initialized.');
             // Ensure MediaElementSourceNode is only created once
             if (!sourceNodeRef.current) {
-              debug && console.log("Initializing MediaElementSourceNode.");
+              debug && console.log('Initializing MediaElementSourceNode.');
               sourceNodeRef.current = audioContextRef.current.createMediaElementSource(audioRef.current);
             }
 
             // Initialize AnalyserNode if not already
             if (!analyserNodeRef.current) {
-              debug && console.log("Initializing AnalyserNode.");
+              debug && console.log('Initializing AnalyserNode.');
               analyserNodeRef.current = audioContextRef.current.createAnalyser();
               analyserNodeRef.current.fftSize = 512;
               analyserNodeRef.current.smoothingTimeConstant = 0.6;
               analyserNodeRef.current.minDecibels = -90;
               analyserNodeRef.current.maxDecibels = -10;
 
-              debug && console.log("AnalyserNode initialized.");
+              debug && console.log('AnalyserNode initialized.');
               const bufferLength = analyserNodeRef.current.frequencyBinCount;
-              debug && console.log("BufferLength:", bufferLength);
+              debug && console.log('BufferLength:', bufferLength);
               dataArrayRef.current = new Uint8Array(bufferLength);
-              debug && console.log("DataArray initialized.", dataArrayRef.current);
+              debug && console.log('DataArray initialized.', dataArrayRef.current);
             }
 
             // Connect nodes
             if (sourceNodeRef.current && analyserNodeRef.current && audioContextRef.current) {
               sourceNodeRef.current.connect(analyserNodeRef.current);
-              debug && console.log("SourceNode connected to AnalyserNode.");
+              debug && console.log('SourceNode connected to AnalyserNode.');
               analyserNodeRef.current.connect(audioContextRef.current.destination);
-              debug && console.log("AnalyserNode connected to AudioContext destination.");
-              debug && console.log("AudioContext and nodes initialized.");
+              debug && console.log('AnalyserNode connected to AudioContext destination.');
+              debug && console.log('AudioContext and nodes initialized.');
             }
           }
         } catch (error) {
-          console.error("Error initializing AudioContext and nodes:", error);
+          console.error('Error initializing AudioContext and nodes:', error);
         }
       }
 
       // Resume AudioContext if suspended
       if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
         audioContextRef.current.resume().then(() => {
-          debug && console.log("AudioContext resumed:", audioContextRef.current?.state);
+          debug && console.log('AudioContext resumed:', audioContextRef.current?.state);
         }).catch(error => {
-          console.error("Error resuming AudioContext:", error);
+          console.error('Error resuming AudioContext:', error);
         });
       }
 
@@ -278,7 +278,7 @@ const AudioPlayer: React.FC = () => {
           animationFrameRef.current = requestAnimationFrame(updateAmplitude);
         })
         .catch(error => {
-          console.error("Error during audio playback:", error);
+          console.error('Error during audio playback:', error);
         });
     }
   }, [isPlaying, handlePlayPause, updateAmplitude, debug]);
@@ -292,9 +292,9 @@ const AudioPlayer: React.FC = () => {
       }
       if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
         audioContextRef.current.close().then(() => {
-          debug && console.log("AudioContext closed.");
+          debug && console.log('AudioContext closed.');
         }).catch(error => {
-          console.error("Error closing AudioContext:", error);
+          console.error('Error closing AudioContext:', error);
         });
       }
     };
@@ -335,9 +335,9 @@ const AudioPlayer: React.FC = () => {
         <button
           className={`${styles.playPauseButton}`}
           onClick={togglePlayPause}
-          aria-label={isPlaying ? "Pause audio" : "Play audio"}
+          aria-label={isPlaying ? 'Pause audio' : 'Play audio'}
         >
-          {isPlaying ? "❚❚" : "►"}
+          {isPlaying ? '❚❚' : '►'}
         </button>
 
         <button

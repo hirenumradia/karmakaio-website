@@ -1,10 +1,10 @@
 // src/components/3d/ParticleSwarm.tsx
 
-import React, { useRef, useMemo, useEffect } from "react";
-import { useFrame, extend, ReactThreeFiber, useThree } from "@react-three/fiber";
-import * as THREE from "three";
-import { shaderMaterial } from "@react-three/drei";
-import glsl from "babel-plugin-glsl/macro";
+import React, { useRef, useMemo, useEffect } from 'react';
+import { useFrame, extend, ReactThreeFiber, useThree } from '@react-three/fiber';
+import * as THREE from 'three';
+import { shaderMaterial } from '@react-three/drei';
+import glsl from 'babel-plugin-glsl/macro';
 
 // Define the props for the shader material
 type SwarmShaderMaterialProps = {
@@ -212,7 +212,7 @@ declare global {
   }
 }
 
-declare module "@react-three/fiber" {
+declare module '@react-three/fiber' {
   interface ThreeElements {
     swarmShaderMaterial: ReactThreeFiber.ShaderMaterialProps & {
       pointTexture: THREE.Texture;
@@ -248,10 +248,10 @@ export const ParticleSwarm: React.FC<ParticleSwarmProps> = ({   trailLength,
   // Generate the particle texture
   const particleTexture = useMemo(() => {
     const size = 128;
-    const canvas = document.createElement("canvas");
+    const canvas = document.createElement('canvas');
     canvas.width = size;
     canvas.height = size;
-    const context = canvas.getContext("2d");
+    const context = canvas.getContext('2d');
 
     if (context) {
       const gradient = context.createRadialGradient(
@@ -262,8 +262,8 @@ export const ParticleSwarm: React.FC<ParticleSwarmProps> = ({   trailLength,
         size / 2,
         size / 2
       );
-      gradient.addColorStop(0, "white");
-      gradient.addColorStop(1, "transparent");
+      gradient.addColorStop(0, 'white');
+      gradient.addColorStop(1, 'transparent');
 
       context.fillStyle = gradient;
       context.fillRect(0, 0, size, size);

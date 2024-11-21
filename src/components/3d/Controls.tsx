@@ -1,7 +1,7 @@
 // src/components/3d/Controls.tsx
 
-import React from "react";
-import { OrbitControls } from "@react-three/drei";
+import React from 'react';
+import { OrbitControls } from '@react-three/drei';
 
 export const Controls = () => (
   <OrbitControls

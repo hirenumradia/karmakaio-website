@@ -1,9 +1,9 @@
 // src/components/3d/Shaders.tsx
 
-import { shaderMaterial } from "@react-three/drei";
-import { extend } from "@react-three/fiber";
-import React from "react";
-import { ColorRepresentation } from "three";
+import { shaderMaterial } from '@react-three/drei';
+import { extend } from '@react-three/fiber';
+import React from 'react';
+import { ColorRepresentation } from 'three';
 
 // 1. Define Uniform Interfaces with Direct Value Types
 interface PointUniforms {

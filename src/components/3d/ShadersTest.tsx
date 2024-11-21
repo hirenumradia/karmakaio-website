@@ -1,9 +1,9 @@
 // src/components/3d/ShadersTest.tsx
 
-import { shaderMaterial } from "@react-three/drei";
-import { extend } from "@react-three/fiber";
-import * as THREE from "three";
-import { ReactThreeFiber } from "@react-three/fiber";
+import { shaderMaterial } from '@react-three/drei';
+import { extend } from '@react-three/fiber';
+import * as THREE from 'three';
+import { ReactThreeFiber } from '@react-three/fiber';
 
 // Define the ColorShaderMaterial using shaderMaterial
 const ColorShaderMaterial = shaderMaterial(
