@@ -38,8 +38,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    line-height: 40px;
-    transition: color 0.3s ease;
+    padding: 0;
+    line-height: 1;
+    text-align: center;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.playPauseButton {
+    font-size: 28px;
+    padding-top: 2px;
+}
+
+.playPauseButton:contains('❚❚') {
+    font-size: 22px;
+    padding-top: 0;
 }
 
 .playPauseButton:hover,
