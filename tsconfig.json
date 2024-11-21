@@ -27,7 +27,7 @@
     },
     "baseUrl": "."
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "glsl.d.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "glsl.d.ts", "svgr.d.ts"],
   "exclude": ["node_modules"],
   
 }
