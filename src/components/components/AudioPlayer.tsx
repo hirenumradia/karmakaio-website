@@ -350,15 +350,52 @@ const AudioPlayer: React.FC = () => {
 
   // Function to change tracks
   const changeTrack = useCallback((newIndex: number) => {
-    if (!audioRef.current || !gainNodeRef.current || !audioContextRef.current) return;
+    if (!audioRef.current) return;
+
+    // Initialize AudioContext and nodes if they don't exist
+    if (!audioContextRef.current) {
+      audioContextRef.current = new window.AudioContext();
+      try {
+        // Create nodes only if they don't exist
+        if (!sourceNodeRef.current) {
+          sourceNodeRef.current = audioContextRef.current.createMediaElementSource(audioRef.current);
+        }
+
+        if (!analyserNodeRef.current) {
+          analyserNodeRef.current = audioContextRef.current.createAnalyser();
+          analyserNodeRef.current.fftSize = 512;
+          analyserNodeRef.current.smoothingTimeConstant = 0.6;
+          analyserNodeRef.current.minDecibels = -90;
+          analyserNodeRef.current.maxDecibels = -10;
+
+          const bufferLength = analyserNodeRef.current.frequencyBinCount;
+          dataArrayRef.current = new Uint8Array(bufferLength);
+        }
+
+        if (!gainNodeRef.current) {
+          gainNodeRef.current = audioContextRef.current.createGain();
+          gainNodeRef.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
+
+          // Connect nodes
+          sourceNodeRef.current.connect(gainNodeRef.current);
+          gainNodeRef.current.connect(analyserNodeRef.current);
+          analyserNodeRef.current.connect(audioContextRef.current.destination);
+        }
+      } catch (error) {
+        console.error('Error initializing AudioContext and nodes:', error);
+        return;
+      }
+    }
 
     const currentTime = audioContextRef.current.currentTime;
 
-    // Ramp down gain
-    gainNodeRef.current.gain.setValueAtTime(gainNodeRef.current.gain.value, currentTime);
-    gainNodeRef.current.gain.linearRampToValueAtTime(0, currentTime + rampTimeRef.current);
+    // Only ramp down if we're currently playing
+    if (isPlaying && gainNodeRef.current) {
+      gainNodeRef.current.gain.setValueAtTime(gainNodeRef.current.gain.value, currentTime);
+      gainNodeRef.current.gain.linearRampToValueAtTime(0, currentTime + rampTimeRef.current);
+    }
 
-    // Clear any existing animation frame to prevent multiple loops
+    // Clear any existing animation frame
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
@@ -370,28 +407,37 @@ const AudioPlayer: React.FC = () => {
       audioRef.current!.pause();
       audioRef.current!.load();
 
-      audioRef.current!.addEventListener('canplaythrough', () => {
-        // Ramp up gain
-        const playTime = audioContextRef.current!.currentTime;
-        gainNodeRef.current!.gain.setValueAtTime(0, playTime);
-        gainNodeRef.current!.gain.linearRampToValueAtTime(1, playTime + rampTimeRef.current);
+      // Only auto-play if the current state is playing
+      if (isPlaying) {
+        audioRef.current!.addEventListener('canplaythrough', () => {
+          if (gainNodeRef.current && audioContextRef.current) {
+            const playTime = audioContextRef.current.currentTime;
+            gainNodeRef.current.gain.setValueAtTime(0, playTime);
+            gainNodeRef.current.gain.linearRampToValueAtTime(1, playTime + rampTimeRef.current);
 
-        audioRef.current!.play()
-          .then(() => {
-            isPlayingRef.current = true;
-            handlePlayPause(true);
-            setIsPlaying(true);
-            animationFrameRef.current = requestAnimationFrame(updateAmplitude);
-          })
-          .catch(error => {
-            isPlayingRef.current = false;
-            setIsPlaying(false);
-            handlePlayPause(false);
-            console.error('Error playing audio:', error);
-          });
-      }, { once: true });
-    }, rampTimeRef.current * 1000);
-  }, [handlePlayPause, rampTimeRef, updateAmplitude]);
+            audioRef.current!.play()
+              .then(() => {
+                isPlayingRef.current = true;
+                handlePlayPause(true);
+                setIsPlaying(true);
+                animationFrameRef.current = requestAnimationFrame(updateAmplitude);
+              })
+              .catch(error => {
+                isPlayingRef.current = false;
+                setIsPlaying(false);
+                handlePlayPause(false);
+                console.error('Error playing audio:', error);
+              });
+          }
+        }, { once: true });
+      } else {
+        // If we were paused, maintain paused state
+        isPlayingRef.current = false;
+        setIsPlaying(false);
+        handlePlayPause(false);
+      }
+    }, isPlaying ? rampTimeRef.current * 1000 : 0); // Only wait for ramp if playing
+  }, [handlePlayPause, rampTimeRef, updateAmplitude, isPlaying]);
 
   // Function to play previous track
   const playPrevious = useCallback(() => {
