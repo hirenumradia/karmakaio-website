@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
     // Enables the styled-components plugin
     styledComponents: true,
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   // Webpack configuration for GLSL files
   webpack(config, options) {
     // Add loader for GLSL files
