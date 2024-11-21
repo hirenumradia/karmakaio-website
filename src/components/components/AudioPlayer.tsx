@@ -191,97 +191,117 @@ const AudioPlayer: React.FC = () => {
     }
   }, []);
 
+  // Add this at the top with your other refs
+  const rampTimeRef = useRef(0.1); // 100ms ramp time for smooth transitions
+
   // Function to toggle play/pause
   const togglePlayPause = useCallback(() => {
     if (!audioRef.current) return;
 
     if (isPlaying) {
-      audioRef.current.pause();
-      isPlayingRef.current = false;
-      setAmplitudeRef.current(0); // Reset amplitude when pausing
-      handlePlayPause(false); // Update context state
-
-      if (audioContextRef.current && audioContextRef.current.state === 'running') {
-        audioContextRef.current.suspend().then(() => {
-          debug && console.log('AudioContext suspended.');
-        }).catch(error => {
-          debug && console.error('Error suspending AudioContext:', error);
-        });
+      // Pausing - Implement smooth fade out
+      if (audioContextRef.current?.state === 'running') {
+        const currentTime = audioContextRef.current.currentTime;
+        
+        // If we have an analyzer node, smoothly ramp down its gain
+        if (analyserNodeRef.current) {
+          const gainNode = audioContextRef.current.createGain();
+          gainNode.gain.setValueAtTime(1, currentTime);
+          gainNode.gain.linearRampToValueAtTime(0, currentTime + rampTimeRef.current);
+          
+          // Schedule the actual pause after the ramp
+          setTimeout(() => {
+            audioRef.current?.pause();
+            isPlayingRef.current = false;
+            setAmplitudeRef.current(0);
+            handlePlayPause(false);
+            
+            if (audioContextRef.current?.state === 'running') {
+              audioContextRef.current.suspend();
+            }
+            
+            if (animationFrameRef.current) {
+              cancelAnimationFrame(animationFrameRef.current);
+              animationFrameRef.current = null;
+            }
+            
+            setIsPlaying(false);
+          }, rampTimeRef.current * 1000);
+        }
       }
-      if (animationFrameRef.current) {
-        debug && console.log('Cancelling animation frame.');
-        cancelAnimationFrame(animationFrameRef.current);
-        animationFrameRef.current = null;
-      }
-      setIsPlaying(false);
     } else {
-      debug && console.log('Playing audio.');
-      // Initialize AudioContext if not already
-      if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
-        debug && console.log('Initializing AudioContext.');
+      // Playing
+      if (!audioContextRef.current) {
         audioContextRef.current = new window.AudioContext();
-       
+        
         try {
-          if (audioContextRef.current && audioRef.current) {
-            debug && console.log('AudioContext and audioRef.current initialized.');
-            // Ensure MediaElementSourceNode is only created once
+          if (audioRef.current) {
+            // Create nodes only if they don't exist
             if (!sourceNodeRef.current) {
-              debug && console.log('Initializing MediaElementSourceNode.');
               sourceNodeRef.current = audioContextRef.current.createMediaElementSource(audioRef.current);
             }
 
-            // Initialize AnalyserNode if not already
             if (!analyserNodeRef.current) {
-              debug && console.log('Initializing AnalyserNode.');
               analyserNodeRef.current = audioContextRef.current.createAnalyser();
               analyserNodeRef.current.fftSize = 512;
               analyserNodeRef.current.smoothingTimeConstant = 0.6;
               analyserNodeRef.current.minDecibels = -90;
               analyserNodeRef.current.maxDecibels = -10;
 
-              debug && console.log('AnalyserNode initialized.');
               const bufferLength = analyserNodeRef.current.frequencyBinCount;
-              debug && console.log('BufferLength:', bufferLength);
               dataArrayRef.current = new Uint8Array(bufferLength);
-              debug && console.log('DataArray initialized.', dataArrayRef.current);
-            }
 
-            // Connect nodes
-            if (sourceNodeRef.current && analyserNodeRef.current && audioContextRef.current) {
-              sourceNodeRef.current.connect(analyserNodeRef.current);
-              debug && console.log('SourceNode connected to AnalyserNode.');
+              // Create a gain node for smooth transitions
+              const gainNode = audioContextRef.current.createGain();
+              gainNode.gain.setValueAtTime(0, audioContextRef.current.currentTime);
+
+              // Connect nodes with the gain node in between
+              sourceNodeRef.current.connect(gainNode);
+              gainNode.connect(analyserNodeRef.current);
               analyserNodeRef.current.connect(audioContextRef.current.destination);
-              debug && console.log('AnalyserNode connected to AudioContext destination.');
-              debug && console.log('AudioContext and nodes initialized.');
+
+              // Smooth ramp up
+              gainNode.gain.linearRampToValueAtTime(
+                1, 
+                audioContextRef.current.currentTime + rampTimeRef.current
+              );
             }
           }
         } catch (error) {
           console.error('Error initializing AudioContext and nodes:', error);
+          return;
         }
       }
 
-      // Resume AudioContext if suspended
-      if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+      // Resume context if suspended
+      if (audioContextRef.current.state === 'suspended') {
         audioContextRef.current.resume().then(() => {
-          debug && console.log('AudioContext resumed:', audioContextRef.current?.state);
-        }).catch(error => {
-          console.error('Error resuming AudioContext:', error);
+          audioRef.current?.play()
+            .then(() => {
+              isPlayingRef.current = true;
+              handlePlayPause(true);
+              setIsPlaying(true);
+              animationFrameRef.current = requestAnimationFrame(updateAmplitude);
+            })
+            .catch(error => {
+              console.error('Error playing audio:', error);
+            });
         });
+      } else {
+        // Context is already running
+        audioRef.current.play()
+          .then(() => {
+            isPlayingRef.current = true;
+            handlePlayPause(true);
+            setIsPlaying(true);
+            animationFrameRef.current = requestAnimationFrame(updateAmplitude);
+          })
+          .catch(error => {
+            console.error('Error playing audio:', error);
+          });
       }
-
-      // Play the audio
-      audioRef.current.play()
-        .then(() => {
-          isPlayingRef.current = true;
-          setIsPlaying(true);
-          handlePlayPause(true); // Update context state
-          animationFrameRef.current = requestAnimationFrame(updateAmplitude);
-        })
-        .catch(error => {
-          console.error('Error during audio playback:', error);
-        });
     }
-  }, [isPlaying, handlePlayPause, updateAmplitude, debug]);
+  }, [isPlaying, handlePlayPause, updateAmplitude]);
 
   // Clean up AudioContext on unmount
   useEffect(() => {
@@ -306,7 +326,10 @@ const AudioPlayer: React.FC = () => {
     if (audioRef.current) {
       audioRef.current.pause(); // Pause current audio
       audioRef.current.load(); // Load the new audio
-      audioRef.current.play(); // Play the new audio
+      audioRef.current.addEventListener('canplaythrough', () => {
+        console.log('canplaythrough1');
+        audioRef.current?.play(); // Play the new audio when it's ready
+      }, { once: true }); // Remove the event listener after it fires
     }
   };
 
@@ -316,7 +339,10 @@ const AudioPlayer: React.FC = () => {
     if (audioRef.current) {
       audioRef.current.pause(); // Pause current audio
       audioRef.current.load(); // Load the new audio
-      audioRef.current.play(); // Play the new audio
+      audioRef.current.addEventListener('canplaythrough', () => {
+        console.log('canplaythrough2');
+        audioRef.current?.play(); // Play the new audio when it's ready
+      }, { once: true }); // Remove the event listener after it fires
     }
   };
 

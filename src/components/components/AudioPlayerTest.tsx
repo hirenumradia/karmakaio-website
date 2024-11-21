@@ -62,10 +62,12 @@ const AudioPlayer: React.FC = () => {
 
   const playNext = () => {
     setCurrentSongIndex((prevIndex) => (prevIndex + 1) % playlist.length);
+    togglePlayPause();
   };
 
   const playPrevious = () => {
     setCurrentSongIndex((prevIndex) => (prevIndex - 1 + playlist.length) % playlist.length);
+    togglePlayPause(); 
   };
 
   // Automatically play the song when currentSongIndex changes
