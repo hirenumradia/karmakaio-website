@@ -13,6 +13,7 @@ import { kdTree } from 'kd-tree-javascript';
 import { useAudioContext } from 'src/components/context/AudioContext';
 // import { ShaderDebugger } from "src/components/3d/ShaderDebugger";
 import { useShaderDebugControls } from 'src/components/3d/DebugControls';
+import { clamp } from 'three/src/math/MathUtils.js';
 // import { updateNormalizedMix } from "src/components/utils/3d";
 
 const SHOW_DEBUG_CONTROLS = false; // Set to true when debugging is needed
@@ -45,10 +46,10 @@ export const PointCloud: React.FC<PointCloudProps> = ({
   const debugControls = SHOW_DEBUG_CONTROLS ? useShaderDebugControls() : { showDebug: false };
 
   // Define variables for displacement (modifiable for tweaking)
-  const displacementScale = useRef(1.0); // Base scale for displacement
-  const scatterProbability = useRef(0.3); // Base probability for scatter
-  const scatterScale = useRef(0.2); // Scale factor for scatter displacement
-  const nonLinearExponent = useRef(1.5); // Exponent for non-linear scaling
+  const displacementScale = useRef(1.0); // Increased from 1.0
+  const scatterProbability = useRef(0.5); // Increased from 0.3
+  const scatterScale = useRef(0.4); // Increased from 0.2
+  const nonLinearExponent = useRef(2.0); // Increased from 1.5
 
   // Add this new ref to store the initial neighbor indices
   const neighborIndicesRef = useRef<number[]>([]);
@@ -194,8 +195,9 @@ export const PointCloud: React.FC<PointCloudProps> = ({
     }
 
     // Calculate new target positions
-    const scaledAmplitude = Math.pow(amplitude * 2, nonLinearExponent.current) * displacementScale.current;
-    const dynamicScatterProbability = scatterProbability.current * (1 + amplitude);
+    const displacement = displacementScale.current + 10 * (displacementScale.current*amplitude) // Scaled displacement by amplitude
+    const scaledAmplitude = Math.pow(amplitude * 2.1, nonLinearExponent.current) * displacement; // Increased multiplier from 2 to 4
+    const dynamicScatterProbability = scatterProbability.current * (1 + amplitude); // Added multiplier
     
     for (let i = 0; i < positions.length; i += 3) {
       const home = homePositions.current[i / 3];
